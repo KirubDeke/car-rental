@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Orbitron } from "next/font/google";
 import "./globals.css";
-import NavbarPrivate from "../../components/NavbarPrivate";
-import Home from "./page";
+import { AuthProvider } from "../../context/AuthContext";
+import { Toaster } from "react-hot-toast";
+import NavSwitcher from "../../components/NavbarSwitcher";
 
 const orbitron = Orbitron({
   subsets: ['latin'],
-  weight: ['400', '500', '700'], 
-  variable: '--font-orbitron',   
+  weight: ['400', '500', '700'],
+  variable: '--font-orbitron',
 })
 
 const geistSans = Geist({
@@ -35,8 +36,11 @@ export default function RootLayout({
       <body
         className={`${orbitron.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NavbarPrivate />
-        {children}
+        <AuthProvider>
+          <NavSwitcher />
+           <Toaster position="top-center" reverseOrder={false} />
+          {children}
+        </AuthProvider>
       </body>
     </html >
   );
