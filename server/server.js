@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const user = require("./routes/users");
 const fleet = require("./routes/fleets");
+const booking = require("./routes/bookings");
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 
@@ -53,7 +55,7 @@ db.sequelize.sync().then(() => {
 
 // Routes
 app.use("/kirub-rental/users", user);
-app.use("/kirub-rental/fleets", fleet);
+app.use("/kirub-rental/fleets", fleet, booking);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

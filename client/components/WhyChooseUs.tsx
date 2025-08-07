@@ -32,7 +32,7 @@ const WhyChooseUs = () => {
       <div className="max-w-screen-xl px-4 mx-auto lg:py-16">
         <h2 
           style={{ fontFamily: 'Orbitron, sans-serif' }}
-          className="font-orbitron text-3xl font-extrabold tracking-tight mb-12 text-left md:text-4xl xl:text-5xl"
+          className="font-orbitron text-2xl font-extrabold tracking-tight mb-12 text-left md:text-3xl xl:text-4xl"
         >
           Why Choose <span className="text-red-500">Us</span>
         </h2>
