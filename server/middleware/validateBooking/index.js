@@ -1,10 +1,11 @@
 module.exports = (req, res, next) => {
-  const { fleetId, pickupDate, returnDate, totalPrice, totalDates } = req.body;
+  const { pickupDate, returnDate, pickupLocation } = req.body;
 
   // Check for required fields
-  if (!fleetId || !pickupDate || !returnDate || !totalPrice || !totalDates) {
+  if (!pickupDate || !returnDate || !pickupLocation) {
     return res.status(400).json({
-      message: "All fields (fleetId, pickupDate, returnDate, totalPrice, totalDates) are required.",
+      message:
+        "All fields (pickupDate, returnDate, pickupLocation) are required.",
     });
   }
 

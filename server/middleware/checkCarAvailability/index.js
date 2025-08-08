@@ -3,7 +3,8 @@ const db = require("../../models");
 const bookings = db.bookings;
 
 module.exports = async (req, res, next) => {
-  const { fleetId, pickupDate, returnDate } = req.body;
+  const { pickupDate, returnDate } = req.body;
+  const fleetId = req.params.id;
 
   try {
     // Parse dates

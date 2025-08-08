@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     method: {
-      type: DataTypes.ENUM("cash_on_delivery", "mobile_banking", "cash", "bank_transfer", "chappa", "paypal"),
+      type: DataTypes.ENUM("chappa", "paypal"),
       allowNull: false,
     },
     status: {

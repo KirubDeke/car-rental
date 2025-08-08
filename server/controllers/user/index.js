@@ -6,7 +6,7 @@ const signup = async (req, res) => {
   const { fullName, email, phoneNumber, password, role = "user" } = req.body;
 
   try {
-    console.log('Request body:', req.body);
+    console.log("Request body:", req.body);
 
     const existingUser = await db.users.findOne({ where: { email } });
     if (existingUser) {
@@ -40,7 +40,7 @@ const signup = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         phone: user.phoneNumber,
-        role: user.role
+        role: user.role,
       },
       token,
     });
@@ -126,10 +126,46 @@ const getMe = async (req, res) => {
   }
 };
 
+const profile = async (req, res) => {
+  const userId = req.user?.id;
+  
+  if (!userId) {
+    return res.status(401).json({ 
+      status: "fail", 
+      message: "Not authenticated" 
+    });
+  }
+
+  try {
+    const user = await db.users.findByPk(userId, {
+      attributes: ['id', 'fullName', 'email', 'phoneNumber', 'role'] 
+    });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        status: "fail", 
+        message: "User not found" 
+      });
+    }
+    
+    return res.status(200).json({
+      status: "success",
+      data: user
+    });
+    
+  } catch (error) {
+    console.error("Profile error:", error);
+    return res.status(500).json({ 
+      status: "error", 
+      message: "Internal server error" 
+    });
+  }
+};
+
 module.exports = {
   signup,
   login,
   signout,
   getMe,
-
+  profile
 };

@@ -1,12 +1,14 @@
 const express = require('express')
 const controller = require('../../controllers/user')
 const  { validateRegisterInput } = require('../../middleware/validateRegister')
+const isAuthenticated = require('../../middleware/isAuthenticated')
 const router = express.Router()
 
 router.post('/signup', validateRegisterInput, controller.signup)
 router.post('/login', controller.login)
 router.get('/me', controller.getMe)
 router.post('/signout', controller.signout)
+router.get('/profile', isAuthenticated, controller.profile)
 
 module.exports = router
 
