@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, MouseEvent } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 import {
@@ -8,6 +8,7 @@ import {
   Car, Fuel, Cog, Users, Edit2, Check, X,
   CreditCard, Banknote, ChevronRight, Smartphone, DollarSign
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface Fleet {
   id: number;
@@ -83,6 +84,7 @@ export default function BookingConfirmationPage() {
   const [isCanceling, setIsCanceling] = useState<boolean>(false);
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('');
+  const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -103,7 +105,6 @@ export default function BookingConfirmationPage() {
           email: userData.email || ''
         });
 
-        // Only start editing if any user info is missing
         if (!userData.fullName || !userData.phoneNumber || !userData.email) {
           setIsEditingUserInfo(true);
         }
@@ -214,43 +215,52 @@ export default function BookingConfirmationPage() {
           returnDate: booking.returnDate || endDate,
           pickupLocation: booking.pickupLocation || pickupLocation,
           totalPrice: booking.totalPrice || totalPrice,
-          userDetails: {
-            fullName: editData.fullName,
-            email: editData.email,
-            phoneNumber: editData.phoneNumber
-          }
+          fullName: editData.fullName,
+          email: editData.email,
+          phoneNumber: editData.phoneNumber
         },
         { withCredentials: true }
       );
 
       setBooking(prev => prev ? { ...prev, status: 'confirmed' } : null);
+      toast.success('Booking confirmed successfully!');
     } catch (err) {
       const error = err as AxiosError | Error;
       setError(error.message || 'Failed to confirm booking');
       console.error('Confirm booking error:', error);
+      toast.error(error.message || 'Failed to confirm booking');
     } finally {
       setIsConfirming(false);
     }
   };
 
   const handleCancelBooking = async (): Promise<void> => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelBooking = async (): Promise<void> => {
+    setShowCancelModal(false);
+
+    if (!id) {
+      setError('Missing booking ID');
+      return;
+    }
 
     setIsCanceling(true);
     try {
-      const queryParams = new URLSearchParams({
-        startDate: startDate,
-        endDate: endDate,
-        pickupLocation: pickupLocation,
-        totalDays: booking?.totalDate.toString() || totalDays.toString(),
-        totalPrice: booking?.totalPrice.toString() || totalPrice.toString()
-      }).toString();
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/cancel-booking/${id}`,
+        { withCredentials: true }
+      );
 
-      router.push(`/fleet/${id}?${queryParams}`);
+      setBooking(prev => prev ? { ...prev, status: 'cancelled' } : null);
+      toast.success('Booking cancelled successfully');
+      router.push('/home');
     } catch (err) {
-      const error = err as Error;
+      const error = err as AxiosError | Error;
       setError(error.message || 'Failed to cancel booking');
       console.error('Cancel booking error:', error);
+      toast.error(error.message || 'Failed to cancel booking');
     } finally {
       setIsCanceling(false);
     }
@@ -258,6 +268,21 @@ export default function BookingConfirmationPage() {
 
   const handlePaymentSelection = (method: PaymentMethod): void => {
     setSelectedPayment(method);
+  };
+
+  const handlePayment = async (e: MouseEvent<HTMLButtonElement>): Promise<void> => {
+    e.preventDefault();
+    if (!selectedPayment || !booking) return;
+
+    try {
+      toast.loading('Processing payment...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast.success(`Payment of ${booking.totalPrice.toLocaleString()} ETB via ${selectedPayment} successful!`);
+      router.push(`/bookings/${booking.id}`);
+    } catch (err) {
+      toast.error('Payment failed. Please try again.');
+      console.error('Payment error:', err);
+    }
   };
 
   if (error) {
@@ -294,12 +319,44 @@ export default function BookingConfirmationPage() {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background text-foreground dark:text-foreground py-12 px-4 sm:px-6 lg:px-8">
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20">
+                <XCircle className="h-10 w-10 text-red-600 dark:text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-4">Cancel Booking</h3>
+              <div className="mt-4">
+                <p className="text-gray-600 dark:text-gray-300">
+                  Are you sure you want to cancel this booking? This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-center gap-4">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white"
+              >
+                Go Back
+              </button>
+              <button
+                onClick={confirmCancelBooking}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                <XCircle className="h-5 w-5" />
+                Confirm Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <button
-            onClick={handleCancelBooking}
-            disabled={isCanceling}
-            className="flex items-center text-red-500 dark:text-red-500 hover:text-red-600 dark:hover:text-red-600 transition-colors disabled:opacity-70"
+            onClick={() => router.back()}
+            className="flex items-center text-red-500 dark:text-red-500 hover:text-red-600 dark:hover:text-red-600 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back
@@ -334,7 +391,6 @@ export default function BookingConfirmationPage() {
           </div>
 
           <div className="p-6 grid md:grid-cols-2 gap-8">
-            {/* Car details column - unchanged */}
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center gap-2">
@@ -412,7 +468,6 @@ export default function BookingConfirmationPage() {
               </div>
             </div>
 
-            {/* Booking details column */}
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center gap-2">
@@ -422,7 +477,6 @@ export default function BookingConfirmationPage() {
               </div>
 
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600 space-y-6">
-                {/* Non-editable booking details */}
                 <div className="space-y-4">
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
                     <div className="flex justify-between items-center">
@@ -475,7 +529,6 @@ export default function BookingConfirmationPage() {
                   </div>
                 </div>
 
-                {/* User Information Section - Editable */}
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-600">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="font-medium text-lg text-gray-800 dark:text-white flex items-center gap-2">
@@ -573,10 +626,9 @@ export default function BookingConfirmationPage() {
             </div>
           </div>
 
-          {/* Action buttons */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-700">
             <div className="flex flex-col sm:flex-row gap-4">
-              {booking.status === 'pending' && (
+              {booking?.status === 'pending' && (
                 <button
                   onClick={handleConfirmBooking}
                   disabled={isConfirming}
@@ -593,27 +645,25 @@ export default function BookingConfirmationPage() {
                 </button>
               )}
 
-              <button
-                onClick={handleCancelBooking}
-                disabled={isCanceling || booking.status === 'cancelled'}
-                className={`flex-1 py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-md hover:shadow-lg ${booking.status === 'cancelled'
-                  ? 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-not-allowed'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
-                  }`}
-              >
-                {isCanceling ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <XCircle className="w-6 h-6" />
-                    {booking.status === 'cancelled' ? 'Booking Cancelled' : 'Cancel Booking'}
-                  </>
-                )}
-              </button>
+              {booking?.status === 'confirmed' && (
+                <button
+                  onClick={handleCancelBooking}
+                  disabled={isCanceling}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-md hover:shadow-lg"
+                >
+                  {isCanceling ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <XCircle className="w-6 h-6" />
+                      Cancel Booking
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Payment section (shown when booking is confirmed) */}
           {booking.status === 'confirmed' && (
             <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-700">
               <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
@@ -708,7 +758,10 @@ export default function BookingConfirmationPage() {
                 <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
                   <h3 className="font-medium text-gray-800 dark:text-white mb-2">Proceed with {selectedPayment.replace('_', ' ')} payment</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">You'll be redirected to complete your payment securely</p>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg"
+                    onClick={handlePayment}
+                  >
                     Pay {booking.totalPrice.toLocaleString()} ETB Now
                   </button>
                 </div>

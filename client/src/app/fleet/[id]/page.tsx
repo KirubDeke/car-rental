@@ -5,7 +5,8 @@ import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Car as CarIcon, Fuel, Cog, Users, BadgeInfo,
-  CheckCircle2, XCircle, CalendarDays, MapPin, X
+  CheckCircle2, XCircle, CalendarDays, MapPin, X,
+  ArrowLeft
 } from 'lucide-react';
 import ButtonOne from '../../../../components/ui/ButtonOne';
 
@@ -72,7 +73,6 @@ export default function CarDetailPage() {
     setFormError('');
 
     try {
-      // Validate form
       if (!formData.startDate || !formData.endDate) {
         throw new Error('Please fill all required fields');
       }
@@ -81,14 +81,12 @@ export default function CarDetailPage() {
         throw new Error('End date must be after start date');
       }
 
-      // Calculate total days and price
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       const calculated = totalDays * parseInt(car?.pricePerDay || '0');
     
-      // Navigate to booking confirmation with state
       const queryParams = new URLSearchParams({
         startDate: formData.startDate,
         endDate: formData.endDate,
@@ -137,7 +135,14 @@ export default function CarDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Booking Modal */}
+      <button
+        onClick={() => router.push('/home')}
+        className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        Back to cars
+      </button>
+
       {showBookingForm && (
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full relative">
@@ -236,9 +241,7 @@ export default function CarDetailPage() {
         </div>
       )}
 
-      {/* Car Details */}
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Car Image */}
         <div className="rounded-xl overflow-hidden group flex items-center justify-center p-4 min-h-[20rem]">
           <div className="relative w-full h-full flex items-center justify-center">
             <img
@@ -260,7 +263,6 @@ export default function CarDetailPage() {
           </div>
         </div>
 
-        {/* Car Details */}
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
@@ -288,7 +290,6 @@ export default function CarDetailPage() {
             <p>{car.description}</p>
           </div>
 
-          {/* Features Grid */}
           <div className="grid grid-cols-2 gap-4">
             <Feature icon={<CarIcon className="w-5 h-5" />} label="Vehicle Type" value={car.type} />
             <Feature icon={<Fuel className="w-5 h-5" />} label="Fuel Type" value={car.fuelType} />

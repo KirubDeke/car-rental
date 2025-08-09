@@ -1,3 +1,4 @@
+import CarRentalFAQ from "../../../components/FAQ";
 import Footer from "../../../components/Footer";
 import HeroSection from "../../../components/Hero";
 import Testimonies from "../../../components/Testimonies";
@@ -12,6 +13,7 @@ export default function HomePage() {
             <WhyChooseUs />
             <FleetPage/>
             <Testimonies/>
+            <CarRentalFAQ/>
             <Footer />
         </>
 

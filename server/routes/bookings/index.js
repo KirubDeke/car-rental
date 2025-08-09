@@ -6,7 +6,7 @@ const validateBooking = require('../../middleware/validateBooking');
 const controller = require('../../controllers/booking');
 
 router.post('/book-fleet/:id', isAuthenticated, checkCarAvailability, validateBooking, controller.createBooking);
-router.get('/booking-confirmation/:id', isAuthenticated, controller.bookingConfirmation);
+router.delete('/cancel-booking/:id', isAuthenticated, controller.cancelBooking);
 
 module.exports = router;
 

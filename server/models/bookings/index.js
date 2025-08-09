@@ -1,5 +1,17 @@
 module.exports = (sequelize, DataTypes) => {
   const Booking = sequelize.define("Booking", {
+    fullName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    phoneNumber:{
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     pickupLocation: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -20,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    status: {
+      type: DataTypes.ENUM("pending", "confirmed", "cancelled", "completed"),
+      defaultValue: "pending",
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -35,10 +51,6 @@ module.exports = (sequelize, DataTypes) => {
         model: "Fleets",
         key: "id",
       },
-    },
-    status: {
-      type: DataTypes.ENUM("pending", "confirmed", "cancelled", "completed"),
-      defaultValue: "pending",
     },
   });
   return Booking;

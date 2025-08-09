@@ -1,10 +1,16 @@
-const express = require("express");
 const db = require("../../models");
 
 const createBooking = async (req, res) => {
   const userId = req.user?.id;
   const fleetId = req.params.id;
-  const { pickupDate, returnDate, pickupLocation } = req.body;
+  const {
+    pickupDate,
+    returnDate,
+    pickupLocation,
+    fullName,
+    email,
+    phoneNumber,
+  } = req.body;
 
   try {
     // Validate user existence
@@ -15,7 +21,6 @@ const createBooking = async (req, res) => {
         message: "User not found",
       });
     }
-
     // Validate fleet existence
     const fleet = await db.fleets.findByPk(fleetId);
     if (!fleet) {
@@ -24,7 +29,6 @@ const createBooking = async (req, res) => {
         message: "Fleet not found",
       });
     }
-
     // Calculate total days
     const pickup = new Date(pickupDate);
     const returnD = new Date(returnDate);
@@ -37,11 +41,11 @@ const createBooking = async (req, res) => {
         message: "Return date must be after pickup date",
       });
     }
-
     // Calculate price
     const pricePerDay = fleet.pricePerDay;
     const totalPrice = totalDays * pricePerDay;
 
+    // Prepare booking data
     const bookingData = {
       pickupDate,
       returnDate,
@@ -50,8 +54,11 @@ const createBooking = async (req, res) => {
       totalDate: totalDays,
       totalPrice,
       pickupLocation,
+      fullName,
+      email,
+      phoneNumber,
+      status: "confirmed"
     };
-
     await db.bookings.create(bookingData);
 
     res.status(200).json({
@@ -68,12 +75,11 @@ const createBooking = async (req, res) => {
   }
 };
 
-const bookingConfirmation = async (req, res) => {
+const cancelBooking = async (req, res) => {
   const userId = req.user?.id;
   const fleetId = req.params.id;
 
   try {
-    // Check user existence
     const user = await db.users.findByPk(userId);
     if (!user) {
       return res.status(404).json({
@@ -82,45 +88,42 @@ const bookingConfirmation = async (req, res) => {
       });
     }
 
-    // Find booking with user and fleet info
-    const bookingInfo = await db.bookings.findOne({
-      where: { userId, fleetId },
-      include: [
-        {
-          model: db.users,
-          attributes: ['fullName', 'phoneNumber', 'email']
-        },
-        {
-          model: db.fleets,
-          attributes: ['brand', 'model', 'year', 'plateNumber', 'type', 'pricePerDay', 'fuelType', 'seats', 'transmission', 'image']
-        },
-        
-      ]
-    });
-
-    if (!bookingInfo) {
+    const fleet = await db.fleets.findByPk(fleetId);
+    if (!fleet) {
       return res.status(404).json({
         status: "fail",
-        message: "Booking not found for this user and fleet",
+        message: "Fleet not found",
       });
     }
 
-    res.status(200).json({
+    const booking = await db.bookings.findOne({
+      where: { userId, fleetId },
+    });
+    if (!booking) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Booking not found",
+      });
+    }
+
+    await booking.update({ status: "cancelled" });
+
+    return res.status(200).json({
       status: "success",
-      message: "Fetched Successfully",
-      data: bookingInfo
+      message: "Booking cancelled successfully",
+      data: booking,
     });
 
   } catch (error) {
-    console.error("Booking confirmation error:", error);
-    res.status(500).json({
+    console.error(error);
+    return res.status(500).json({
       status: "error",
-      message: "Internal server error",
+      message: "An error occurred while cancelling the booking",
     });
   }
 };
 
 module.exports = {
   createBooking,
-  bookingConfirmation
+  cancelBooking
 };
