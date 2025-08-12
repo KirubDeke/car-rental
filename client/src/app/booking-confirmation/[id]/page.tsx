@@ -74,6 +74,7 @@ export default function BookingConfirmationPage() {
   const totalPrice = parseFloat(searchParams.get('totalPrice') || '0');
 
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [actualBookingId, setActualBookingId] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
   const [isEditingUserInfo, setIsEditingUserInfo] = useState<boolean>(false);
   const [editData, setEditData] = useState<EditData>({
@@ -86,6 +87,21 @@ export default function BookingConfirmationPage() {
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('');
   const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
 
+  const fetchBookingId = async (fleetId: string) => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/bookingId/${fleetId}`,
+        { withCredentials: true }
+      );
+      if (response.data.status === "success") {
+        setActualBookingId(response.data.data.bookingId.toString());
+      }
+    } catch (error) {
+      console.error("Error fetching booking ID:", error);
+      toast.error("Failed to get booking reference");
+    }
+  };
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -93,18 +109,15 @@ export default function BookingConfirmationPage() {
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/users/profile`,
           { withCredentials: true }
         );
-
         if (profileRes.data.status !== 'success') {
           throw new Error("Failed to fetch user profile");
         }
-
         const userData = profileRes.data.data;
         setEditData({
           fullName: userData.fullName || '',
           phoneNumber: userData.phoneNumber || '',
           email: userData.email || ''
         });
-
         if (!userData.fullName || !userData.phoneNumber || !userData.email) {
           setIsEditingUserInfo(true);
         }
@@ -115,7 +128,6 @@ export default function BookingConfirmationPage() {
         setIsEditingUserInfo(true);
       }
     };
-
     fetchUserProfile();
   }, []);
 
@@ -125,14 +137,11 @@ export default function BookingConfirmationPage() {
         if (!id) {
           throw new Error('Booking ID is missing');
         }
-
         const res = await axios.get<ApiResponse<any>>(
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/car/${id}`,
           { withCredentials: true }
         );
-
         const apiData = res.data.data;
-
         const fleetData: Fleet = {
           id: apiData.id,
           brand: apiData.brand,
@@ -146,7 +155,6 @@ export default function BookingConfirmationPage() {
           transmission: apiData.transmission,
           image: apiData.image
         };
-
         const combinedData: Booking = {
           id: id.toString(),
           pickupDate: startDate,
@@ -163,7 +171,6 @@ export default function BookingConfirmationPage() {
           },
           Fleet: fleetData
         };
-
         setBooking(combinedData);
       } catch (err) {
         const error = err as AxiosError | Error;
@@ -171,7 +178,6 @@ export default function BookingConfirmationPage() {
         console.error('Fetch booking error:', error);
       }
     };
-
     fetchBooking();
   }, [id, startDate, endDate, totalDays, totalPrice, pickupLocation, editData]);
 
@@ -186,7 +192,6 @@ export default function BookingConfirmationPage() {
 
   const saveUserInfo = (): void => {
     if (!booking) return;
-
     const updatedBooking: Booking = {
       ...booking,
       User: {
@@ -196,7 +201,6 @@ export default function BookingConfirmationPage() {
         email: editData.email
       }
     };
-
     setBooking(updatedBooking);
     setIsEditingUserInfo(false);
   };
@@ -207,7 +211,6 @@ export default function BookingConfirmationPage() {
       if (!id || !booking) {
         throw new Error('Missing booking data');
       }
-
       await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/book-fleet/${id}`,
         {
@@ -221,9 +224,9 @@ export default function BookingConfirmationPage() {
         },
         { withCredentials: true }
       );
-
       setBooking(prev => prev ? { ...prev, status: 'confirmed' } : null);
       toast.success('Booking confirmed successfully!');
+      fetchBookingId(id);
     } catch (err) {
       const error = err as AxiosError | Error;
       setError(error.message || 'Failed to confirm booking');
@@ -240,19 +243,16 @@ export default function BookingConfirmationPage() {
 
   const confirmCancelBooking = async (): Promise<void> => {
     setShowCancelModal(false);
-
     if (!id) {
       setError('Missing booking ID');
       return;
     }
-
     setIsCanceling(true);
     try {
       await axios.delete(
         `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/cancel-booking/${id}`,
         { withCredentials: true }
       );
-
       setBooking(prev => prev ? { ...prev, status: 'cancelled' } : null);
       toast.success('Booking cancelled successfully');
       router.push('/home');
@@ -272,16 +272,35 @@ export default function BookingConfirmationPage() {
 
   const handlePayment = async (e: MouseEvent<HTMLButtonElement>): Promise<void> => {
     e.preventDefault();
-    if (!selectedPayment || !booking) return;
-
+    if (!selectedPayment || !booking || !actualBookingId) {
+      toast.error("Please complete booking confirmation first");
+      return;
+    }
     try {
-      toast.loading('Processing payment...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success(`Payment of ${booking.totalPrice.toLocaleString()} ETB via ${selectedPayment} successful!`);
-      router.push(`/bookings/${booking.id}`);
+      toast.loading('Initializing payment...');
+      const payload = {
+        amount: booking.totalPrice,
+      };
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/chappa/initialize/${actualBookingId}`,
+        payload,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      toast.dismiss();
+      if (!response.data.checkout_url) {
+        throw new Error('No checkout URL received');
+      }
+      window.location.href = response.data.checkout_url;
     } catch (err) {
-      toast.error('Payment failed. Please try again.');
-      console.error('Payment error:', err);
+      toast.dismiss();
+      const error = err as AxiosError | Error;
+      toast.error(error.message || 'Payment initialization failed');
+      console.error('Payment error:', error);
     }
   };
 
@@ -385,7 +404,7 @@ export default function BookingConfirmationPage() {
               </div>
               <div className="p-4 rounded-lg">
                 <p className="text-white text-sm">Booking Reference</p>
-                <p className="font-mono font-bold text-xl">#{booking.id}</p>
+                <p className="font-mono font-bold text-xl">#{actualBookingId || 'Pending'}</p>
               </div>
             </div>
           </div>
@@ -675,94 +694,34 @@ export default function BookingConfirmationPage() {
                 <button
                   onClick={() => handlePaymentSelection('chapa')}
                   className={`bg-white dark:bg-gray-800 p-4 rounded-lg border transition-all flex items-center justify-between ${selectedPayment === 'chapa'
-                    ? 'border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/50'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
+                      ? 'border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/50'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
                     }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="bg-purple-100 p-3 rounded-full"><CreditCard className="w-6 h-6 text-purple-600" /></div>
+                    <div className="bg-purple-100 p-3 rounded-full">
+                      <CreditCard className="w-6 h-6 text-purple-600" />
+                    </div>
                     <div className="text-left">
                       <h3 className="font-medium text-gray-900 dark:text-white">Chapa</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Secure online payment</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-                <button
-                  onClick={() => handlePaymentSelection('mobile_banking')}
-                  className={`bg-white dark:bg-gray-800 p-4 rounded-lg border transition-all flex items-center justify-between ${selectedPayment === 'mobile_banking'
-                    ? 'border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/50'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
-                    }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="bg-blue-100 p-3 rounded-full"><Smartphone className="w-6 h-6 text-blue-600" /></div>
-                    <div className="text-left">
-                      <h3 className="font-medium text-gray-900 dark:text-white">Mobile Banking</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Pay with mobile wallet</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-                <button
-                  onClick={() => handlePaymentSelection('cash')}
-                  className={`bg-white dark:bg-gray-800 p-4 rounded-lg border transition-all flex items-center justify-between ${selectedPayment === 'cash'
-                    ? 'border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/50'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
-                    }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="bg-green-100 p-3 rounded-full"><DollarSign className="w-6 h-6 text-green-600" /></div>
-                    <div className="text-left">
-                      <h3 className="font-medium text-gray-900 dark:text-white">Cash</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Pay on pickup</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-                <button
-                  onClick={() => handlePaymentSelection('bank_transfer')}
-                  className={`bg-white dark:bg-gray-800 p-4 rounded-lg border transition-all flex items-center justify-between ${selectedPayment === 'bank_transfer'
-                    ? 'border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/50'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
-                    }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="bg-yellow-100 p-3 rounded-full"><Banknote className="w-6 h-6 text-yellow-600" /></div>
-                    <div className="text-left">
-                      <h3 className="font-medium text-gray-900 dark:text-white">Bank Transfer</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Direct bank payment</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-                <button
-                  onClick={() => handlePaymentSelection('paypal')}
-                  className={`bg-white dark:bg-gray-800 p-4 rounded-lg border transition-all flex items-center justify-between ${selectedPayment === 'paypal'
-                    ? 'border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/50'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
-                    }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="bg-orange-100 p-3 rounded-full"><CreditCard className="w-6 h-6 text-orange-600" /></div>
-                    <div className="text-left">
-                      <h3 className="font-medium text-gray-900 dark:text-white">PayPal</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">International payments</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Credit/Debit Card, Mobile Money
+                      </p>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
-
               {selectedPayment && (
                 <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
                   <h3 className="font-medium text-gray-800 dark:text-white mb-2">Proceed with {selectedPayment.replace('_', ' ')} payment</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">You'll be redirected to complete your payment securely</p>
                   <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg"
+                    className="bg-red-500 hover:bg-red-600 text-white py-2.5 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg"
                     onClick={handlePayment}
+                    disabled={!actualBookingId}
                   >
-                    Pay {booking.totalPrice.toLocaleString()} ETB Now
+                    {actualBookingId ? `Pay ${booking.totalPrice.toLocaleString()} ETB Now` : 'Preparing payment...'}
                   </button>
                 </div>
               )}

@@ -57,14 +57,13 @@ const createBooking = async (req, res) => {
       fullName,
       email,
       phoneNumber,
-      status: "confirmed"
+      status: "confirmed",
     };
     await db.bookings.create(bookingData);
 
     res.status(200).json({
       status: "success",
       message: "Fleet booked successfully",
-      data: bookingData,
     });
   } catch (error) {
     console.error("Booking error:", error);
@@ -113,7 +112,6 @@ const cancelBooking = async (req, res) => {
       message: "Booking cancelled successfully",
       data: booking,
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -123,7 +121,57 @@ const cancelBooking = async (req, res) => {
   }
 };
 
+const getBookingId = async (req, res) => {
+  const userId = req.user?.id;
+  const { fleetId } = req.params;
+
+  try {
+    const user = await db.users.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+
+    const fleet = await db.fleets.findByPk(fleetId); 
+    if (!fleet) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Fleet not found",
+      });
+    }
+    const booking = await db.bookings.findOne({
+      where: {
+        userId,
+        fleetId,
+        status: "confirmed",
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No confirmed booking found for this user and fleet",
+      });
+    }
+    return res.status(200).json({
+      status: "success",
+      data: {
+        bookingId: booking.id,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching booking ID:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   createBooking,
-  cancelBooking
+  cancelBooking,
+  getBookingId
 };

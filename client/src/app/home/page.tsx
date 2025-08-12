@@ -1,3 +1,4 @@
+import { CTABanner } from "../../../components/CTABanner";
 import CarRentalFAQ from "../../../components/FAQ";
 import Footer from "../../../components/Footer";
 import HeroSection from "../../../components/Hero";
@@ -12,6 +13,7 @@ export default function HomePage() {
             <HeroSection />
             <WhyChooseUs />
             <FleetPage/>
+            <CTABanner/>
             <Testimonies/>
             <CarRentalFAQ/>
             <Footer />

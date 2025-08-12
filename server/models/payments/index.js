@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
         key: "id",
       },
     },
+    tx_ref: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     paidAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

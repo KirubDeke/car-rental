@@ -6,6 +6,7 @@ require("dotenv").config();
 const user = require("./routes/users");
 const fleet = require("./routes/fleets");
 const booking = require("./routes/bookings");
+const chappa = require("./routes/chappa");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -56,6 +57,7 @@ db.sequelize.sync().then(() => {
 // Routes
 app.use("/kirub-rental/users", user);
 app.use("/kirub-rental/fleets", fleet, booking);
+app.use("/kirub-rental/chappa", chappa);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
