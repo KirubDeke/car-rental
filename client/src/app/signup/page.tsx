@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Lock, Mail, User, Eye, EyeOff, CarFront } from 'lucide-react';
 import Image from 'next/image';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';

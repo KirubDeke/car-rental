@@ -1,3 +1,5 @@
+"use client";
+
 const db = require("../../models");
 const axios = require("axios");
 require("dotenv").config();
@@ -39,6 +41,7 @@ const initializePayment = async (req, res) => {
         },
       }
     );
+
     await db.payments.create(
       {
         amount,
@@ -68,38 +71,138 @@ const initializePayment = async (req, res) => {
 };
 
 const handleChappaCallback = async (req, res) => {
+  const transaction = await db.sequelize.transaction();
   try {
     const { tx_ref } = req.body;
+    if (!tx_ref) {
+      await transaction.rollback();
+      return res.status(400).json({ error: "Missing tx_ref" });
+    }
 
-    if (!tx_ref) return res.status(400).json({ error: "Missing tx_ref" });
-
+    // Verify payment with Chapa
     const verifyRes = await axios.get(
+      `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
+      { headers: { Authorization: `Bearer ${process.env.CHAPPA_SECRET_KEY}` } }
+    );
+
+    const paymentStatus = verifyRes.data.data.status;
+    const payment = await db.payments.findOne({
+      where: { tx_ref },
+      transaction,
+    });
+
+    if (!payment) {
+      await transaction.rollback();
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    payment.status = paymentStatus === "success" ? "completed" : "failed";
+    await payment.save({ transaction });
+
+    if (payment.status === "completed") {
+      // Fetch booking and include fleet
+      const booking = await db.bookings.findByPk(payment.bookingId, {
+        include: [{ model: db.fleets }],
+        transaction,
+      });
+
+      if (!booking) {
+        await transaction.rollback();
+        return res.status(404).json({ error: "Booking not found" });
+      }
+
+      booking.status = "confirmed";
+      await booking.save({ transaction });
+
+      const fleet = booking.Fleet;
+      if (!fleet) {
+        await transaction.rollback();
+        return res.status(404).json({ error: "Fleet not found" });
+      }
+
+      console.log("Fleet before update:", fleet.bookedDates);
+      fleet.bookedDates = [
+        ...(fleet.bookedDates || []),
+        {
+          startDate: booking.pickupDate,
+          endDate: booking.returnDate,
+          bookingId: booking.id,
+        },
+      ];
+
+      await fleet.save({ transaction });
+
+      console.log("Fleet after update:", fleet.bookedDates);
+    }
+
+    await transaction.commit();
+    res.status(200).json({
+      message: "Callback processed",
+      status: paymentStatus,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Error in callback:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to process callback" });
+  }
+};
+
+const verifyChappaPayment = async (req, res) => {
+  const { tx_ref } = req.params;
+
+  if (!tx_ref) {
+    return res.status(400).json({
+      status: "error",
+      message: "Transaction reference is required",
+    });
+  }
+
+  try {
+    const chapaRes = await axios.get(
       `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.CHAPPA_SECRET_KEY}`,
+          "Content-Type": "application/json",
         },
       }
     );
 
-    const paymentStatus = verifyRes.data.data.status;
+    const data = chapaRes.data;
+    const paymentStatus = data?.data?.status;
 
-    const payment = await db.Payment.findOne({ where: { tx_ref } });
+    // Update payment record in DB
+    const payment = await db.payments.findOne({ where: { tx_ref } });
     if (payment) {
       payment.status = paymentStatus === "success" ? "completed" : "failed";
       await payment.save();
     }
 
-    res
-      .status(200)
-      .json({ message: "Callback processed", status: paymentStatus });
+    if (data.status === "success" && paymentStatus === "success") {
+      return res.json({
+        status: "success",
+        message: "Payment verified successfully",
+        data: data.data,
+      });
+    } else {
+      return res.status(400).json({
+        status: "error",
+        message: "Payment verification failed",
+        data: data.data,
+      });
+    }
   } catch (error) {
     console.error(error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to process callback" });
+    return res.status(500).json({
+      status: "error",
+      message: "Error verifying payment",
+      error: error?.response?.data || error.message,
+    });
   }
 };
 
 module.exports = {
   initializePayment,
   handleChappaCallback,
+  verifyChappaPayment,
 };

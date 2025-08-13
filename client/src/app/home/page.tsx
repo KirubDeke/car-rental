@@ -16,7 +16,6 @@ export default function HomePage() {
             <CTABanner/>
             <Testimonies/>
             <CarRentalFAQ/>
-            <Footer />
         </>
 
     )

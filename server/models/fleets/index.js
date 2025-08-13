@@ -4,52 +4,65 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    model: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    year: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
+    model: DataTypes.STRING,
+    year: DataTypes.INTEGER,
     plateNumber: {
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
     },
     type: {
-      type: DataTypes.STRING, 
+      type: DataTypes.STRING,
       allowNull: false,
     },
     pricePerDay: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    fuelType: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    seats: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    transmission: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
+    fuelType: DataTypes.STRING,
+    seats: DataTypes.INTEGER,
+    transmission: DataTypes.STRING,
     availability: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
-      allowNull: false
+      allowNull: false,
     },
-    image: {
-      type: DataTypes.STRING,
-      allowNull: true
+    image: DataTypes.STRING,
+    description: DataTypes.TEXT,
+    bookedDates: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+      index: true
     },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true
+    maintenanceMode: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     },
   });
+
+  // Check availability for requested dates
+  Fleet.prototype.isAvailableForDates = function (startDate, endDate) {
+    if (!this.availability || this.maintenanceMode) return false;
+
+    const requestedStart = new Date(startDate);
+    const requestedEnd = new Date(endDate);
+
+    for (const period of this.bookedDates || []) {
+      const bookedStart = new Date(period.startDate);
+      const bookedEnd = new Date(period.endDate);
+
+      if (
+        (requestedStart >= bookedStart && requestedStart <= bookedEnd) ||
+        (requestedEnd >= bookedStart && requestedEnd <= bookedEnd) ||
+        (requestedStart <= bookedStart && requestedEnd >= bookedEnd)
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   return Fleet;
 };

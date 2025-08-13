@@ -12,23 +12,23 @@ const createBooking = async (req, res) => {
     phoneNumber,
   } = req.body;
 
+  const transaction = await db.sequelize.transaction();
+
   try {
     // Validate user existence
-    const user = await db.users.findByPk(userId);
+    const user = await db.users.findByPk(userId, { transaction });
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User not found",
-      });
+      await transaction.rollback();
+      return res.status(404).json({ status: "fail", message: "User not found" });
     }
+
     // Validate fleet existence
-    const fleet = await db.fleets.findByPk(fleetId);
+    const fleet = await db.fleets.findByPk(fleetId, { transaction });
     if (!fleet) {
-      return res.status(404).json({
-        status: "fail",
-        message: "Fleet not found",
-      });
+      await transaction.rollback();
+      return res.status(404).json({ status: "fail", message: "Fleet not found" });
     }
+
     // Calculate total days
     const pickup = new Date(pickupDate);
     const returnD = new Date(returnDate);
@@ -36,36 +36,56 @@ const createBooking = async (req, res) => {
     const totalDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
     if (totalDays <= 0) {
+      await transaction.rollback();
       return res.status(400).json({
         status: "fail",
         message: "Return date must be after pickup date",
       });
     }
-    // Calculate price
+
+    // Calculate total price
     const pricePerDay = fleet.pricePerDay;
     const totalPrice = totalDays * pricePerDay;
 
-    // Prepare booking data
-    const bookingData = {
-      pickupDate,
-      returnDate,
-      userId,
-      fleetId,
-      totalDate: totalDays,
-      totalPrice,
-      pickupLocation,
-      fullName,
-      email,
-      phoneNumber,
-      status: "confirmed",
-    };
-    await db.bookings.create(bookingData);
+    // Create booking
+    const booking = await db.bookings.create(
+      {
+        pickupDate,
+        returnDate,
+        userId,
+        fleetId,
+        totalDate: totalDays,
+        totalPrice,
+        pickupLocation,
+        fullName,
+        email,
+        phoneNumber,
+        status: "confirmed",
+      },
+      { transaction }
+    );
+
+    // Update fleet bookedDates only
+    fleet.bookedDates = [
+      ...(fleet.bookedDates || []),
+      {
+        startDate: pickupDate,
+        endDate: returnDate,
+        bookingId: booking.id,
+      },
+    ];
+
+    await fleet.save({ transaction });
+
+    await transaction.commit();
 
     res.status(200).json({
       status: "success",
       message: "Fleet booked successfully",
+      bookingId: booking.id,
     });
   } catch (error) {
+    await transaction.rollback();
     console.error("Booking error:", error);
     res.status(500).json({
       status: "error",

@@ -2,15 +2,15 @@ module.exports = (sequelize, DataTypes) => {
   const Booking = sequelize.define("Booking", {
     fullName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     email: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
-    phoneNumber:{
+    phoneNumber: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     pickupLocation: {
       type: DataTypes.STRING,

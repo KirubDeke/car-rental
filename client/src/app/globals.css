@@ -34,6 +34,15 @@ body {
   to { transform: scale(1); }
 }
 
+@keyframes dismiss {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
 .animate-in {
   animation: fadeIn 0.2s ease-out forwards;
 }

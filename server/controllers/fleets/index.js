@@ -59,7 +59,7 @@ const createFleets = async (req, res) => {
 // GET /fleets
 const getAllFleets = async (req, res) => {
   try {
-    const cars = await db.fleets.findAll();
+    const cars = await db.fleets.findAll({ where: { availability: true} });
     const totalCar = await db.fleets.count();
     return res.status(200).json({
       status: "success",

@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "../../context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import NavSwitcher from "../../components/NavbarSwitcher";
+import Footer from "../../components/Footer";
+import { ErrorProvider } from "../../context/error-context";
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -38,8 +40,11 @@ export default function RootLayout({
       >
         <AuthProvider>
           <NavSwitcher />
-           <Toaster position="top-center" reverseOrder={false} />
-          {children}
+          <Toaster position="top-center" reverseOrder={false} />
+          <ErrorProvider>
+            {children}
+          </ErrorProvider>
+          <Footer />
         </AuthProvider>
       </body>
     </html >
