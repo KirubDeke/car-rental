@@ -12,8 +12,32 @@ export default function FleetPage() {
   useEffect(() => {
     const fetchCars = async () => {
       try {
+        // 1. Fetch all cars
         const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/all`);
-        setCars(res.data.data);
+        const fleets = res.data.data;
+
+        // 2. Fetch availability for each car in parallel
+        const fleetsWithAvailability = await Promise.all(
+          fleets.map(async (car: any) => {
+            try {
+              const availabilityRes = await axios.get(
+                `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/isAvailable/${car.id}`
+              );
+              return {
+                ...car,
+                available: availabilityRes.data.available, 
+              };
+            } catch (error) {
+              console.error(`Error fetching availability for car ${car.id}:`, error);
+              return {
+                ...car,
+                available: false,
+              };
+            }
+          })
+        );
+
+        setCars(fleetsWithAvailability);
       } catch (error) {
         console.error('Error:', error);
       } finally {

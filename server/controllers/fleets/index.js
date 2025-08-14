@@ -59,7 +59,7 @@ const createFleets = async (req, res) => {
 // GET /fleets
 const getAllFleets = async (req, res) => {
   try {
-    const cars = await db.fleets.findAll({ where: { availability: true} });
+    const cars = await db.fleets.findAll();
     const totalCar = await db.fleets.count();
     return res.status(200).json({
       status: "success",
@@ -103,8 +103,49 @@ const getFleetById = async (req, res) => {
   }
 };
 
+const checkFleetAvailability = async (req, res) => {
+  try {
+    const { id } = req.params; 
+   
+  
+      const today = new Date();
+      date = today.toISOString().split("T")[0];
+   
+    const fleet = await db.fleets.findByPk(id);
+    if (!fleet) {
+      return res.status(404).json({ error: "Fleet not found" });
+    }
+
+    const checkDate = new Date(date);
+    let isAvailable = true;
+
+    if (fleet.bookedDates && fleet.bookedDates.length > 0) {
+      for (const booking of fleet.bookedDates) {
+        const start = new Date(booking.startDate);
+        const end = new Date(booking.endDate);
+
+        if (checkDate >= start && checkDate <= end) {
+          isAvailable = false;
+          break;
+        }
+      }
+    }
+
+    res.status(200).json({
+      fleetId: id,
+      date,
+      available: isAvailable,
+    });
+  } catch (error) {
+    console.error("Availability check error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
 module.exports = {
   createFleets,
   getAllFleets,
   getFleetById,
+  checkFleetAvailability
 };

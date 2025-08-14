@@ -13,7 +13,6 @@ const createBooking = async (req, res) => {
   } = req.body;
 
   const transaction = await db.sequelize.transaction();
-
   try {
     // Validate user existence
     const user = await db.users.findByPk(userId, { transaction });
@@ -60,12 +59,11 @@ const createBooking = async (req, res) => {
         fullName,
         email,
         phoneNumber,
-        status: "confirmed",
+        status: "confirmed", 
       },
       { transaction }
     );
 
-    // Update fleet bookedDates only
     fleet.bookedDates = [
       ...(fleet.bookedDates || []),
       {
@@ -74,7 +72,7 @@ const createBooking = async (req, res) => {
         bookingId: booking.id,
       },
     ];
-
+    fleet.changed("bookedDates", true);
     await fleet.save({ transaction });
 
     await transaction.commit();

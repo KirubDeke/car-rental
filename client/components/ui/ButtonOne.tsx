@@ -1,3 +1,4 @@
+// ButtonOne.tsx
 'use client';
 
 import React from 'react';
@@ -6,7 +7,7 @@ type ButtonProps = {
   children: React.ReactNode;
   type?: 'button' | 'submit' | 'reset';
   className?: string;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>; 
   disabled?: boolean;
 };
 

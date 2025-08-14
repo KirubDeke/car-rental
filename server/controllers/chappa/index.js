@@ -78,14 +78,13 @@ const handleChappaCallback = async (req, res) => {
       await transaction.rollback();
       return res.status(400).json({ error: "Missing tx_ref" });
     }
-
     // Verify payment with Chapa
     const verifyRes = await axios.get(
       `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
       { headers: { Authorization: `Bearer ${process.env.CHAPPA_SECRET_KEY}` } }
     );
-
     const paymentStatus = verifyRes.data.data.status;
+    // Find payment in DB
     const payment = await db.payments.findOne({
       where: { tx_ref },
       transaction,
@@ -98,46 +97,9 @@ const handleChappaCallback = async (req, res) => {
 
     payment.status = paymentStatus === "success" ? "completed" : "failed";
     await payment.save({ transaction });
-
-    if (payment.status === "completed") {
-      // Fetch booking and include fleet
-      const booking = await db.bookings.findByPk(payment.bookingId, {
-        include: [{ model: db.fleets }],
-        transaction,
-      });
-
-      if (!booking) {
-        await transaction.rollback();
-        return res.status(404).json({ error: "Booking not found" });
-      }
-
-      booking.status = "confirmed";
-      await booking.save({ transaction });
-
-      const fleet = booking.Fleet;
-      if (!fleet) {
-        await transaction.rollback();
-        return res.status(404).json({ error: "Fleet not found" });
-      }
-
-      console.log("Fleet before update:", fleet.bookedDates);
-      fleet.bookedDates = [
-        ...(fleet.bookedDates || []),
-        {
-          startDate: booking.pickupDate,
-          endDate: booking.returnDate,
-          bookingId: booking.id,
-        },
-      ];
-
-      await fleet.save({ transaction });
-
-      console.log("Fleet after update:", fleet.bookedDates);
-    }
-
     await transaction.commit();
     res.status(200).json({
-      message: "Callback processed",
+      message: "Payment status updated",
       status: paymentStatus,
     });
   } catch (error) {

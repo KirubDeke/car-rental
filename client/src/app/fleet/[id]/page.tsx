@@ -44,19 +44,30 @@ export default function CarDetailPage() {
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
-    const fetchCar = async () => {
+    const fetchCarAndAvailability = async () => {
       try {
-        const res = await axios.get(
+        // Fetch car details
+        const carRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/car/${id}`
         );
-        setCar(res.data.data);
+        let carData = carRes.data.data;
+
+        // Call availability API with today's date if startDate not provided yet
+        const todayDate = new Date().toISOString().split('T')[0];
+        const availRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/isAvailable/${id}?date=${todayDate}`
+        );
+
+        carData.availability = availRes.data.available;
+        setCar(carData);
+
       } catch (err) {
         console.error(err);
         setError(true);
       }
     };
 
-    if (id) fetchCar();
+    if (id) fetchCarAndAvailability();
   }, [id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,12 +92,21 @@ export default function CarDetailPage() {
         throw new Error('End date must be after start date');
       }
 
+      // Check availability for selected start date
+      const availRes = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/isAvailable/${id}?date=${formData.startDate}`
+      );
+
+      if (!availRes.data.available) {
+        throw new Error('This car is not available for the selected start date');
+      }
+
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       const calculated = totalDays * parseInt(car?.pricePerDay || '0');
-    
+
       const queryParams = new URLSearchParams({
         startDate: formData.startDate,
         endDate: formData.endDate,

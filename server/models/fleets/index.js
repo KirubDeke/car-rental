@@ -22,11 +22,6 @@ module.exports = (sequelize, DataTypes) => {
     fuelType: DataTypes.STRING,
     seats: DataTypes.INTEGER,
     transmission: DataTypes.STRING,
-    availability: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-      allowNull: false,
-    },
     image: DataTypes.STRING,
     description: DataTypes.TEXT,
     bookedDates: {
@@ -40,29 +35,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
   });
-
-  // Check availability for requested dates
-  Fleet.prototype.isAvailableForDates = function (startDate, endDate) {
-    if (!this.availability || this.maintenanceMode) return false;
-
-    const requestedStart = new Date(startDate);
-    const requestedEnd = new Date(endDate);
-
-    for (const period of this.bookedDates || []) {
-      const bookedStart = new Date(period.startDate);
-      const bookedEnd = new Date(period.endDate);
-
-      if (
-        (requestedStart >= bookedStart && requestedStart <= bookedEnd) ||
-        (requestedEnd >= bookedStart && requestedEnd <= bookedEnd) ||
-        (requestedStart <= bookedStart && requestedEnd >= bookedEnd)
-      ) {
-        return false;
-      }
-    }
-
-    return true;
-  };
 
   return Fleet;
 };

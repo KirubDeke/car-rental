@@ -7,5 +7,6 @@ const controller = require("../../controllers/fleets");
 router.post("/create", uploads.single("image"), controller.createFleets)
 router.get("/all", controller.getAllFleets)
 router.get("/car/:id", controller.getFleetById)
+router.get("/isAvailable/:id", controller.checkFleetAvailability)
 
 module.exports = router;

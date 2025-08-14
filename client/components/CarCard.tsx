@@ -1,9 +1,10 @@
-// components/CarCard.tsx
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Fuel, Users, Settings, CheckCircle, XCircle } from 'lucide-react';
+import axios from 'axios';
 import ButtonOne from './ui/ButtonOne';
 
 interface Car {
@@ -13,23 +14,39 @@ interface Car {
   fuelType: string;
   seats: number;
   transmission: string;
-  availability: boolean;
   image: string;
 }
 
 const CarCard: React.FC<{ car: Car }> = ({ car }) => {
   const router = useRouter();
+  const [availability, setAvailability] = useState<boolean>(false);
 
-  const price = parseInt(car.pricePerDay).toLocaleString('en-US', {
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/isAvailable/${car.id}`
+        );
+        setAvailability(res.data.available ?? false);
+      } catch (error) {
+        console.error(`Error fetching availability for car ${car.id}:`, error);
+        setAvailability(false);
+      }
+    };
+
+    fetchAvailability();
+  }, [car.id]);
+
+  const price = parseInt(car.pricePerDay, 10).toLocaleString('en-US', {
     style: 'currency',
     currency: 'ETB',
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   });
 
   return (
     <div
-      onClick={() => router.push(`/fleet/${car.id}`)}
       className="cursor-pointer w-full bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg shadow-sm hover:shadow-md transition-all"
+      onClick={() => router.push(`/fleet/${car.id}`)}
     >
       {/* Image */}
       <div className="relative h-44 bg-gray-50">
@@ -65,7 +82,7 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
           <div>
             <p className="text-lg font-bold">{price}</p>
             <div className="flex items-center gap-1 text-xs">
-              {car.availability ? (
+              {availability ? (
                 <>
                   <CheckCircle className="w-3.5 h-3.5 text-green-500" />
                   <span className="text-green-600">Available</span>
@@ -78,16 +95,22 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
               )}
             </div>
           </div>
-          <ButtonOne
-            className={`px-3 py-1.5 text-sm rounded-md ${
-              car.availability
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-gray-100 text-gray-400'
-            }`}
-            disabled={!car.availability}
-          >
-            Book Now
-          </ButtonOne>
+
+          {/* Button with Link */}
+          <Link href={`/fleet/${car.id}`} passHref>
+            <ButtonOne
+              type="button"
+              onClick={(e) => e.stopPropagation()} 
+              className={`px-3 py-1.5 text-sm rounded-md ${availability
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              disabled={!availability}
+            >
+              Book Now
+            </ButtonOne>
+
+          </Link>
         </div>
       </div>
     </div>

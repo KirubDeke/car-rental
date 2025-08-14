@@ -14,7 +14,7 @@ export default function NavbarPrivate() {
     <nav className="bg-white/30 dark:bg-black/30 sticky top-0 z-50">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         {/* Logo - Left Side */}
-        <Link href="#" className="flex items-center md:flex-1">
+        <Link href="/home" className="flex items-center md:flex-1">
           <div className="flex items-center space-x-2 text-2xl font-semibold whitespace-nowrap">
             <CarFront size={42} className="text-foreground dark:text-foreground" />
             <h2 className="text-gray-800 dark:text-white font-bold" style={{ fontFamily: 'Orbitron, sans-serif' }}>
