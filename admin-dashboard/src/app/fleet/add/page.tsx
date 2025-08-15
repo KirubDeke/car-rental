@@ -2,17 +2,34 @@
 
 import { useState, useCallback } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import { useDropzone } from "react-dropzone";
 import Header from "../../../../components/Header";
 import Sidebar from "../../../../components/Sidebar";
 
-const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid", "CNG"];
-const transmissionTypes = ["Automatic", "Manual"];
-const seatOptions = [2, 4, 5, 7, 8];
+const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid", "CNG"] as const;
+const transmissionTypes = ["Automatic", "Manual"] as const;
+const seatOptions = [2, 4, 5, 7, 8] as const;
+
+type FuelType = (typeof fuelTypes)[number];
+type TransmissionType = (typeof transmissionTypes)[number];
+type SeatOption = (typeof seatOptions)[number];
+
+interface CarFormData {
+  brand: string;
+  model: string;
+  year: string;
+  plateNumber: string;
+  type: string;
+  pricePerDay: string;
+  fuelType: FuelType;
+  seats: SeatOption;
+  transmission: TransmissionType;
+  description: string;
+}
 
 export default function CarCreationForm() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CarFormData>({
     brand: "",
     model: "",
     year: "",
@@ -41,9 +58,13 @@ export default function CarCreationForm() {
     maxFiles: 1,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -55,24 +76,20 @@ export default function CarCreationForm() {
 
     try {
       const formDataToSend = new FormData();
-      
-      // Append all form fields
+
       Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value);
+        formDataToSend.append(key, String(value));
       });
 
-      // Append image if exists
       if (image) {
         formDataToSend.append("image", image);
       }
 
       const response = await axios.post(
-        "http://localhost:8000/kirub-rental/fleets/create",
+        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/create`,
         formDataToSend,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          withCredentials: true,
         }
       );
 
@@ -97,7 +114,10 @@ export default function CarCreationForm() {
       }
     } catch (error: any) {
       console.error("Error creating car:", error);
-      toast.error(error.response?.data?.message || "Failed to create car. Please try again.");
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to create car. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -112,15 +132,19 @@ export default function CarCreationForm() {
           <div className="w-full max-w-5xl">
             <div className="bg-white rounded-xl shadow-md overflow-hidden min-h-[600px]">
               <div className="bg-red-500 p-4">
-                <h2 className="text-xl font-semibold text-white">Add New Fleet</h2>
+                <h2 className="text-xl font-semibold text-white">
+                  Add New Fleet
+                </h2>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Column 1 */}
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Brand*</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Brand*
+                      </label>
                       <input
                         type="text"
                         name="brand"
@@ -132,7 +156,9 @@ export default function CarCreationForm() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Model</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Model
+                      </label>
                       <input
                         type="text"
                         name="model"
@@ -143,7 +169,9 @@ export default function CarCreationForm() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Year</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Year
+                      </label>
                       <input
                         type="number"
                         name="year"
@@ -159,7 +187,9 @@ export default function CarCreationForm() {
                   {/* Column 2 */}
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Plate Number*</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Plate Number*
+                      </label>
                       <input
                         type="text"
                         name="plateNumber"
@@ -171,7 +201,9 @@ export default function CarCreationForm() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Type*</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Type*
+                      </label>
                       <input
                         type="text"
                         name="type"
@@ -183,7 +215,9 @@ export default function CarCreationForm() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Price Per Day*</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Price Per Day*
+                      </label>
                       <input
                         type="number"
                         name="pricePerDay"
@@ -200,43 +234,55 @@ export default function CarCreationForm() {
                   {/* Column 3 */}
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Fuel Type</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Fuel Type
+                      </label>
                       <select
                         name="fuelType"
                         value={formData.fuelType}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border rounded-md"
                       >
-                        {fuelTypes.map(type => (
-                          <option key={type} value={type}>{type}</option>
+                        {fuelTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
                         ))}
                       </select>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Transmission</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Transmission
+                      </label>
                       <select
                         name="transmission"
                         value={formData.transmission}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border rounded-md"
                       >
-                        {transmissionTypes.map(type => (
-                          <option key={type} value={type}>{type}</option>
+                        {transmissionTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
                         ))}
                       </select>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Seats</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Seats
+                      </label>
                       <select
                         name="seats"
                         value={formData.seats}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border rounded-md"
                       >
-                        {seatOptions.map(seats => (
-                          <option key={seats} value={seats}>{seats}</option>
+                        {seatOptions.map((seats) => (
+                          <option key={seats} value={seats}>
+                            {seats}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -247,11 +293,15 @@ export default function CarCreationForm() {
                 <div className="grid grid-cols-1 gap-4">
                   {/* Image Upload */}
                   <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">Car Image</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Car Image
+                    </label>
                     <div
                       {...getRootProps()}
                       className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer ${
-                        isDragActive ? "border-red-500 bg-red-50" : "border-gray-300"
+                        isDragActive
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300"
                       }`}
                     >
                       <input {...getInputProps()} />
@@ -259,7 +309,9 @@ export default function CarCreationForm() {
                         <p className="text-green-600">{image.name}</p>
                       ) : (
                         <p className="text-gray-500">
-                          {isDragActive ? "Drop the image here" : "Drag & drop image, or click to select"}
+                          {isDragActive
+                            ? "Drop the image here"
+                            : "Drag & drop image, or click to select"}
                         </p>
                       )}
                     </div>
@@ -267,7 +319,9 @@ export default function CarCreationForm() {
 
                   {/* Description */}
                   <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Description
+                    </label>
                     <textarea
                       name="description"
                       value={formData.description}
@@ -284,7 +338,9 @@ export default function CarCreationForm() {
                     type="submit"
                     disabled={isSubmitting}
                     className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-                      isSubmitting ? "bg-gray-400" : "bg-red-500 hover:bg-red-600"
+                      isSubmitting
+                        ? "bg-gray-400"
+                        : "bg-red-500 hover:bg-red-600"
                     }`}
                   >
                     {isSubmitting ? "Creating..." : "Create Car"}

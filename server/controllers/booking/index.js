@@ -18,14 +18,18 @@ const createBooking = async (req, res) => {
     const user = await db.users.findByPk(userId, { transaction });
     if (!user) {
       await transaction.rollback();
-      return res.status(404).json({ status: "fail", message: "User not found" });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "User not found" });
     }
 
     // Validate fleet existence
     const fleet = await db.fleets.findByPk(fleetId, { transaction });
     if (!fleet) {
       await transaction.rollback();
-      return res.status(404).json({ status: "fail", message: "Fleet not found" });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Fleet not found" });
     }
 
     // Calculate total days
@@ -59,7 +63,7 @@ const createBooking = async (req, res) => {
         fullName,
         email,
         phoneNumber,
-        status: "confirmed", 
+        status: "confirmed",
       },
       { transaction }
     );
@@ -152,7 +156,7 @@ const getBookingId = async (req, res) => {
       });
     }
 
-    const fleet = await db.fleets.findByPk(fleetId); 
+    const fleet = await db.fleets.findByPk(fleetId);
     if (!fleet) {
       return res.status(404).json({
         status: "fail",
@@ -187,9 +191,85 @@ const getBookingId = async (req, res) => {
     });
   }
 };
+//fetch booking information
+const getBookingInformation = async (req, res) => {
+  try {
+    const bookings = await db.bookings.findAndCountAll({
+      include: [
+        {
+          model: db.users,
+          as: "user",
+          attributes: ["id", "fullName", "email", "phoneNumber"],
+        },
+        {
+          model: db.fleets,
+          as: "fleet",
+          attributes: [
+            "id",
+            "brand",
+            "model",
+            "year",
+            "plateNumber",
+            "type",
+            "pricePerDay",
+          ],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (bookings.count === 0) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No bookings found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Bookings fetched successfully",
+      total: bookings.count,
+      data: bookings.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+//delete booking
+const deleteBooking = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const booking = await db.bookings.findByPk(id);
+    if (!booking) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No bookings found",
+      });
+    }
+    await booking.destroy()
+
+    return res.status(200).json({
+      status: "success",
+      message: "Booking deleted successfully",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
 
 module.exports = {
   createBooking,
   cancelBooking,
-  getBookingId
+  getBookingId,
+  getBookingInformation,
+  deleteBooking
 };

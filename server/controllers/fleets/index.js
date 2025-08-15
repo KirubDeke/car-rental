@@ -105,12 +105,11 @@ const getFleetById = async (req, res) => {
 
 const checkFleetAvailability = async (req, res) => {
   try {
-    const { id } = req.params; 
-   
-  
-      const today = new Date();
-      date = today.toISOString().split("T")[0];
-   
+    const { id } = req.params;
+
+    const today = new Date();
+    date = today.toISOString().split("T")[0];
+
     const fleet = await db.fleets.findByPk(id);
     if (!fleet) {
       return res.status(404).json({ error: "Fleet not found" });
@@ -141,11 +140,77 @@ const checkFleetAvailability = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+//update fleets
+const updateFleet = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const fleet = await db.fleets.findByPk(id);
+    if (!fleet) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Fleet not found",
+      });
+    }
+    // Prepare update data
+    const updateData = {
+      brand: req.body.brand || fleet.brand,
+      model: req.body.model || fleet.model,
+      year: parseInt(req.body.year) || fleet.year,
+      plateNumber: req.body.plateNumber || fleet.plateNumber,
+      type: req.body.type || fleet.type,
+      pricePerDay: req.body.pricePerDay || fleet.pricePerDay,
+      fuelType: req.body.fuelType || fleet.fuelType,
+      seats: parseInt(req.body.seats) || fleet.seats,
+      transmission: req.body.transmission || fleet.transmission,
+      description: req.body.description || fleet.description,
+      maintenanceMode: req.body.maintenanceMode === 'true' || fleet.maintenanceMode,
+      image: req.file ? req.file.filename : fleet.image
+    };
 
+    await fleet.update(updateData);
 
+    return res.status(200).json({
+      status: "success",
+      message: "Fleet updated successfully",
+      data: fleet,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+//delete fleet
+const deleteFleet = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const fleet = await db.fleets.findByPk(id);
+    if (!fleet) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Fleet not found",
+      });
+    }
+    await fleet.destroy();
+    return res.status(200).json({
+      status: "success",
+      message: "Fleet removed successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
 module.exports = {
   createFleets,
   getAllFleets,
   getFleetById,
-  checkFleetAvailability
+  checkFleetAvailability,
+  updateFleet,
+  deleteFleet,
 };

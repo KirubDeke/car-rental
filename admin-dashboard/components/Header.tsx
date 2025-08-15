@@ -6,17 +6,9 @@ export default function Header() {
       <div className="flex items-center space-x-4">
         {/* <h1 className="text-xl font-bold text-gray-800">CarRental Admin</h1> */}
       </div>
-      <div className="flex items-center space-x-4">
-        <FaSearch className="h-5 w-5 text-gray-500" />
-        <FaBell className="h-5 w-5 text-gray-500" />
-        <div className="flex items-center">
-          <img
-            src="https://via.placeholder.com/40"
-            alt="Admin"
-            className="rounded-full h-8 w-8"
-          />
-          <span className="ml-2 text-sm font-medium">Admin</span>
-        </div>
+      <div className="flex items-center space-x-4 h-12">
+        {/* <FaSearch className="h-5 w-5 text-gray-500" />
+        <FaBell className="h-5 w-5 text-gray-500" /> */}
       </div>
     </header>
   );

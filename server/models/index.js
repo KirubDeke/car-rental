@@ -55,11 +55,11 @@ db.payments = require('../models/payments')(sequelize, DataTypes);
 
 // User - Booking
 db.users.hasMany(db.bookings, { foreignKey: "userId" });
-db.bookings.belongsTo(db.users, { foreignKey: "userId" });
+db.bookings.belongsTo(db.users, { foreignKey: "userId", as: "user"});
 
 // Fleet - Booking
 db.fleets.hasMany(db.bookings, { foreignKey: "fleetId" });
-db.bookings.belongsTo(db.fleets, { foreignKey: "fleetId" });
+db.bookings.belongsTo(db.fleets, { foreignKey: "fleetId", as: "fleet"});
 
 // Booking - Payment
 db.bookings.hasOne(db.payments, { foreignKey: "bookingId" });

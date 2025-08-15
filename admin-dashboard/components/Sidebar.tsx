@@ -5,8 +5,6 @@ import {
   FaCarAlt,
   FaCalendarCheck,
   FaUsers,
-  FaChartLine,
-  FaCog,
   FaSignOutAlt,
   FaChevronDown,
 } from "react-icons/fa";
@@ -32,9 +30,7 @@ const Sidebar = () => {
       ],
     },
     { name: "bookings", icon: <FaCalendarCheck />, label: "Bookings" },
-    { name: "customers", icon: <FaUsers />, label: "Customers" },
-    { name: "analytics", icon: <FaChartLine />, label: "Analytics" },
-    { name: "settings", icon: <FaCog />, label: "Settings" },
+    { name: "users", icon: <FaUsers />, label: "Users" },
   ];
 
   const toggleSubItems = (itemName: string) => {
@@ -66,7 +62,7 @@ const Sidebar = () => {
       </div>
 
       {/* Menu Items */}
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-2 space-y-1 overflow-y-auto mt-7">
         {menuItems.map((item) => (
           <div key={item.name}>
             <Link href={item.subItems ? "#" : `/${item.name}`}>

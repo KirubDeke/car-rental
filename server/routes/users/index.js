@@ -9,6 +9,8 @@ router.post('/login', controller.login)
 router.get('/me', controller.getMe)
 router.post('/signout', controller.signout)
 router.get('/profile', isAuthenticated, controller.profile)
+router.get('/getAllUsers', controller.getAllUsers)
+router.delete('/deleteUser/:id', controller.deleteUser)
 
 module.exports = router
 

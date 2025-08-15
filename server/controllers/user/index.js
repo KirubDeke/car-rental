@@ -128,36 +128,83 @@ const getMe = async (req, res) => {
 
 const profile = async (req, res) => {
   const userId = req.user?.id;
-  
+
   if (!userId) {
-    return res.status(401).json({ 
-      status: "fail", 
-      message: "Not authenticated" 
+    return res.status(401).json({
+      status: "fail",
+      message: "Not authenticated",
     });
   }
 
   try {
     const user = await db.users.findByPk(userId, {
-      attributes: ['id', 'fullName', 'email', 'phoneNumber', 'role'] 
+      attributes: ["id", "fullName", "email", "phoneNumber", "role"],
     });
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        status: "fail", 
-        message: "User not found" 
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
       });
     }
-    
+
     return res.status(200).json({
       status: "success",
-      data: user
+      data: user,
     });
-    
   } catch (error) {
     console.error("Profile error:", error);
-    return res.status(500).json({ 
-      status: "error", 
-      message: "Internal server error" 
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+//user Info
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await db.users.findAndCountAll();
+
+    if (users.count === 0) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No users found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      totalCount: users.count,
+      data: users.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+//delete user
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await db.users.findByPk(id);
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+    await user.destroy();
+    return res.status(200).json({
+      status: "success",
+      message: "User removed successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
     });
   }
 };
@@ -167,5 +214,7 @@ module.exports = {
   login,
   signout,
   getMe,
-  profile
+  profile,
+  getAllUsers,
+  deleteUser
 };
