@@ -14,6 +14,8 @@ import {
 } from "react-icons/fi";
 import Header from "../../../../components/Header";
 import Sidebar from "../../../../components/Sidebar";
+import { useAuth } from "../../../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface Fleet {
   id: number;
@@ -49,11 +51,17 @@ export default function FleetManagement() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchFleets();
-  }, [currentPage]);
+    if(!isAuthenticated){
+      router.push("/login");
+    }else{
+       fetchFleets();
+    }
+  }, [currentPage,isAuthenticated, router]);
 
   const fetchFleets = async () => {
     try {

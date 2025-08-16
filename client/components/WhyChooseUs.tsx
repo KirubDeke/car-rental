@@ -41,10 +41,10 @@ const WhyChooseUs = () => {
           {/* Image on the left - spans 5 columns */}
           <div className="lg:col-span-5 lg:flex relative">
             {/* Unique Shape Behind */}
-            <div
+            {/* <div
               className="absolute -top-20 -left-20 w-[550px] h-[400px] rounded-full bg-gradient-to-tr from-red-400 via-red-500 to-red-600 opacity-70 blur-3xl -z-10"
               aria-hidden="true"
-            />
+            /> */}
             <div className="relative h-96 w-full rounded-lg overflow-hidden">
               <Image
                 src="/images/car-left-two.png"

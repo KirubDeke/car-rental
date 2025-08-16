@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import StatsCard from "../../components/StatsCard";
@@ -27,12 +29,23 @@ export default function Dashboard() {
     usersCount: 0,
     totalRevenue: 0,
   });
-  const [loading, setLoading] = useState<boolean>(true);
 
+  const [loadingStats, setLoadingStats] = useState<boolean>(true);
+  const { isAuthenticated, loading, user } = useAuth();
+  const router = useRouter();
+
+  //  redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [loading, isAuthenticated, router]);
+
+  // fetch dashboard stats only if authenticated
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        setLoading(true);
+        setLoadingStats(true);
 
         const endpoints = [
           `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/admin/stats/getFleetCount`,
@@ -42,18 +55,14 @@ export default function Dashboard() {
         ];
 
         const responses = await Promise.all(
-          endpoints.map(endpoint => 
-            axios.get<ApiResponse<number>>(endpoint)
-              .then(res => res.data.data || 0) 
-              .catch(err => {
-                if (axios.isAxiosError(err) && err.response?.status === 404) {
-                  return 0;
-                }
-                console.error("API error:", err.message);
-                return 0;
-              })
+          endpoints.map(endpoint =>
+            axios
+              .get<ApiResponse<number>>(endpoint, { withCredentials: true })
+              .then(res => res.data.data || 0)
+              .catch(() => 0)
           )
         );
+
         setStats({
           fleetCount: responses[0],
           bookingCount: responses[1],
@@ -63,13 +72,29 @@ export default function Dashboard() {
       } catch (err) {
         console.error("Unexpected error:", err);
       } finally {
-        setLoading(false);
+        setLoadingStats(false);
       }
     };
 
-    fetchStats();
-  }, []);
+    if (isAuthenticated) {
+      fetchStats();
+    }
+  }, [isAuthenticated]);
+
   if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Checking authentication...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // show stats loading
+  if (loadingStats) {
     return (
       <div className="flex min-h-screen bg-white">
         <Sidebar />
@@ -79,13 +104,16 @@ export default function Dashboard() {
       </div>
     );
   }
+
   return (
     <div className="flex min-h-screen bg-white">
       <Sidebar />
       <div className="flex-1">
         <Header />
         <main className="p-6">
-          <h1 className="text-2xl font-bold mb-6">Dashboard Overview</h1>
+          <h1 className="text-2xl font-bold mb-6">
+            Welcome back, {user?.fullName || "Admin"} 👋
+          </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <StatsCard
               title="Total Cars"

@@ -18,7 +18,7 @@ const ButtonTwo: React.FC<ButtonProps> = ({
   disabled = false,
 }) => {
   const baseClasses =
-    'text-foreground dark:text-foreground bg-white dark:bg-background border border-gray-100 dark:border-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2';
+    'text-black dark:text-black bg-white dark:bg-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2';
 
   return (
     <button

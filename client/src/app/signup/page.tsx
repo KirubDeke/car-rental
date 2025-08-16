@@ -142,18 +142,18 @@ const AuthForm = () => {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-                    <div className="flex border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex border-b border-gray-200 dark:border-gray-100">
                         <button
                             type="button"
                             onClick={() => setIsLogin(true)}
-                            className={`flex-1 py-4 font-medium text-center transition-colors ${isLogin ? 'bg-red-500 text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                            className={`flex-1 py-4 font-medium text-center transition-colors ${isLogin ? 'bg-red-500 text-white' : 'text-gray-500 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                         >
                             Sign In
                         </button>
                         <button
                             type="button"
                             onClick={() => setIsLogin(false)}
-                            className={`flex-1 py-4 font-medium text-center transition-colors ${!isLogin ? 'bg-red-500 text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                            className={`flex-1 py-4 font-medium text-center transition-colors ${!isLogin ? 'bg-red-500 text-white' : 'text-gray-500 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                         >
                             Sign Up
                         </button>
@@ -168,7 +168,7 @@ const AuthForm = () => {
                             {!isLogin && (
                                 <>
                                     <div className="mb-4">
-                                        <label className="block text-gray-700 dark:text-gray-300 mb-2" htmlFor="name">
+                                        <label className="block text-gray-700 dark:text-white mb-2" htmlFor="name">
                                             Full Name
                                         </label>
                                         <div className="relative">
@@ -189,7 +189,7 @@ const AuthForm = () => {
                                     </div>
 
                                     <div className="mb-4">
-                                        <label className="block text-gray-700 dark:text-gray-300 mb-2" htmlFor="phone">
+                                        <label className="block text-gray-700 dark:text-white mb-2" htmlFor="phone">
                                             Phone Number
                                         </label>
                                         <div className="relative">
@@ -212,7 +212,7 @@ const AuthForm = () => {
                                                 required
                                             />
                                         </div>
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-white">
                                             Enter 9 digits after +251
                                         </p>
                                     </div>
@@ -220,7 +220,7 @@ const AuthForm = () => {
                             )}
 
                             <div className="mb-4">
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2" htmlFor="email">
+                                <label className="block text-gray-700 dark:text-white mb-2" htmlFor="email">
                                     Email Address
                                 </label>
                                 <div className="relative">
@@ -241,7 +241,7 @@ const AuthForm = () => {
                             </div>
 
                             <div className="mb-4">
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2" htmlFor="password">
+                                <label className="block text-gray-700 dark:text-white mb-2" htmlFor="password">
                                     Password
                                 </label>
                                 <div className="relative">
@@ -275,7 +275,7 @@ const AuthForm = () => {
 
                             {!isLogin && (
                                 <div className="mb-6">
-                                    <label className="block text-gray-700 dark:text-gray-300 mb-2" htmlFor="confirmPassword">
+                                    <label className="block text-gray-700 dark:text-white mb-2" htmlFor="confirmPassword">
                                         Confirm Password
                                     </label>
                                     <div className="relative">
@@ -320,7 +320,7 @@ const AuthForm = () => {
                                             onChange={(e) => setRememberMe(e.target.checked)}
                                             className="form-checkbox h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 rounded"
                                         />
-                                        <span className="ml-2 text-gray-700 dark:text-gray-300">Remember me</span>
+                                        <span className="ml-2 text-gray-700 dark:text-white">Remember me</span>
                                     </label>
                                     <a href="#" className="text-sm text-red-500 hover:text-red-700 dark:hover:text-red-400">
                                         Forgot password?
@@ -337,7 +337,7 @@ const AuthForm = () => {
                         </form>
 
                         <div className="mt-6 text-center">
-                            <p className="text-gray-600 dark:text-gray-400">
+                            <p className="text-gray-600 dark:text-white">
                                 {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
                                 <button
                                     type="button"
@@ -355,39 +355,10 @@ const AuthForm = () => {
                                     <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                                 </div>
                                 <div className="relative flex justify-center text-sm">
-                                    <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                                    <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-white">
                                         Or continue with
                                     </span>
                                 </div>
-                            </div>
-
-                            <div className="mt-6 grid grid-cols-2 gap-3">
-                                <button
-                                    type="button"
-                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-                                >
-                                    <Image
-                                        src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-                                        alt="Google"
-                                        width={20}
-                                        height={20}
-                                        className="h-5 w-5"
-                                    />
-                                    <span className="ml-2">Google</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-                                >
-                                    <Image
-                                        src="https://upload.wikimedia.org/wikipedia/commons/f/ff/Facebook_logo_36x36.svg"
-                                        alt="Facebook"
-                                        width={20}
-                                        height={20}
-                                        className="h-5 w-5"
-                                    />
-                                    <span className="ml-2">Facebook</span>
-                                </button>
                             </div>
                         </div>
                     </div>

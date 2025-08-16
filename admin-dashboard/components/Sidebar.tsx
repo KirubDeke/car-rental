@@ -11,12 +11,14 @@ import {
 import { CarFront } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar = () => {
   const [activeItem, setActiveItem] = useState("dashboard");
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {}
   );
+  const { logout } = useAuth();
 
   const menuItems = [
     { name: "/", icon: <FaHome />, label: "Dashboard" },
@@ -39,7 +41,9 @@ const Sidebar = () => {
       [itemName]: !prev[itemName],
     }));
   };
-
+const handleLogout = async () => {
+  await logout()
+}
   return (
     <div className="h-screen w-64 bg-white text-gray-800 shadow-lg flex flex-col border-r border-gray-200">
       {/* Logo Section */}
@@ -132,7 +136,7 @@ const Sidebar = () => {
       <div className="p-4 border-t border-gray-200">
         <div
           className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer group"
-          onClick={() => console.log("Logout")}
+          onClick={() => handleLogout()}
         >
           <FaSignOutAlt className="text-lg mr-3 text-red-500 group-hover:text-red-600" />
           <span className="font-medium text-gray-700 group-hover:text-gray-900">

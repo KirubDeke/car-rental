@@ -6,6 +6,8 @@ import { toast } from "react-hot-toast";
 import { FiEye, FiTrash2, FiCalendar, FiUser, FiTruck } from "react-icons/fi";
 import Header from "../../../components/Header";
 import Sidebar from "../../../components/Sidebar";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../../context/AuthContext";
 
 interface User {
   id: number;
@@ -46,10 +48,8 @@ const statusColors = {
 
 const FleetImage = ({ fleet }: { fleet: Fleet }) => {
   const [imageError, setImageError] = useState(false);
-  
-  // Construct proper image URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '');
-  const imagePath = fleet.image?.replace(/^\//, '');
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "");
+  const imagePath = fleet.image?.replace(/^\//, "");
   const imageUrl = imagePath ? `${baseUrl}/uploads/cars/${imagePath}` : null;
 
   if (imageError || !imageUrl) {
@@ -83,17 +83,48 @@ export default function BookingsDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/getBookingsInfo`,
+          { withCredentials: true }
+        );
+
+        if (response.data.status === "success") {
+          setBookings(response.data.data || []);
+        } else {
+          toast.error(response.data.message || "Failed to fetch bookings");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to fetch bookings");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated, authLoading, router]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/getBookingsInfo`
+        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/getBookingsInfo`,
+        { withCredentials: true }
       );
-
       if (response.data.status === "success") {
         setBookings(response.data.data || []);
       } else {
@@ -114,10 +145,10 @@ export default function BookingsDashboard() {
 
   const handleDeleteConfirm = async () => {
     if (!bookingToDelete) return;
-
     try {
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/deleteBooking/${bookingToDelete}`
+        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/deleteBooking/${bookingToDelete}`,
+        { withCredentials: true }
       );
       toast.success("Booking deleted successfully");
       fetchBookings();
@@ -130,14 +161,12 @@ export default function BookingsDashboard() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = dateString ? new Date(dateString) : new Date();
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
 
   const formatPrice = (price: number | string) => {
     const numericPrice = typeof price === "string" ? parseFloat(price) : price;
@@ -168,6 +197,14 @@ export default function BookingsDashboard() {
 
     return matchesSearch && matchesStatus;
   });
+
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -482,32 +519,25 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-xl font-bold">{title}</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
-        </div>
-        {children}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-11/12 max-w-2xl p-6 relative">
+        <h3 className="text-xl font-bold mb-4">{title}</h3>
+        <div>{children}</div>
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+        >
+          ✕
+        </button>
       </div>
     </div>
   );
 };
 
 // Reusable Detail Item Component
-interface DetailItemProps {
-  label: string;
-  value: string;
-}
-
-const DetailItem = ({ label, value }: DetailItemProps) => (
+const DetailItem = ({ label, value }: { label: string; value: string }) => (
   <div>
-    <h4 className="font-semibold text-gray-500 text-sm">{label}</h4>
-    <p className="text-gray-900">{value}</p>
+    <div className="text-sm text-gray-500">{label}</div>
+    <div className="text-sm font-medium text-gray-900">{value}</div>
   </div>
 );

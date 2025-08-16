@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useDropzone } from "react-dropzone";
 import Header from "../../../../components/Header";
 import Sidebar from "../../../../components/Sidebar";
+import { useAuth } from "../../../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid", "CNG"] as const;
 const transmissionTypes = ["Automatic", "Manual"] as const;
@@ -43,6 +45,8 @@ export default function CarCreationForm() {
   });
   const [image, setImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isAuthenticated, user } = useAuth();
+  const router = useRouter();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -122,6 +126,12 @@ export default function CarCreationForm() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router]);
 
   return (
     <div className="flex min-h-screen bg-gray-50">

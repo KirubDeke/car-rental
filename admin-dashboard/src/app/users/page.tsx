@@ -3,9 +3,21 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { FiEye, FiTrash2, FiUser, FiMail, FiPhone, FiEdit, FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi";
+import {
+  FiEye,
+  FiTrash2,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiEdit,
+  FiChevronLeft,
+  FiChevronRight,
+  FiSearch,
+} from "react-icons/fi";
 import Header from "../../../components/Header";
 import Sidebar from "../../../components/Sidebar";
+import { useAuth } from "../../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: number;
@@ -14,7 +26,7 @@ interface User {
   phoneNumber: string;
   photo?: string;
   createdAt: string;
-  role?: "admin" | "user" | "manager"; 
+  role?: "admin" | "user" | "manager";
 }
 
 const roleColors = {
@@ -31,15 +43,23 @@ export default function UsersDashboard() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
   const [totalUsers, setTotalUsers] = useState(0);
 
   useEffect(() => {
-    fetchUsers();
-  }, [currentPage]);
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else {
+      fetchUsers();
+    }
+  }, [currentPage, isAuthenticated, authLoading]);
 
   const fetchUsers = async () => {
     try {
@@ -47,20 +67,14 @@ export default function UsersDashboard() {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/users/getAllUsers`,
         {
-          params: {
-            page: currentPage,
-            limit: usersPerPage,
-          }
+          withCredentials: true,
         }
       );
 
-      console.log("API Response:", response.data);
-
       if (response.data.status === "success") {
-        const usersData = Array.isArray(response.data.data) 
-          ? response.data.data 
+        const usersData = Array.isArray(response.data.data)
+          ? response.data.data
           : Object.values(response.data.data || {});
-        
         setUsers(usersData);
         setTotalUsers(response.data.totalCount || usersData.length);
       } else {
@@ -84,7 +98,10 @@ export default function UsersDashboard() {
 
     try {
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/users/deleteUser/${userToDelete}`
+        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/users/deleteUser/${userToDelete}`,
+        {
+          withCredentials: true,
+        }
       );
       toast.success("User deleted successfully");
       fetchUsers();
@@ -105,27 +122,33 @@ export default function UsersDashboard() {
         month: "short",
         day: "numeric",
       });
-    } catch (e) {
+    } catch {
       return "N/A";
     }
   };
 
   const filteredUsers = users.filter((user) => {
     if (!searchTerm) return true;
-    
     const searchLower = searchTerm.toLowerCase();
     return (
-      (user.fullName?.toLowerCase().includes(searchLower)) ||
-      (user.email?.toLowerCase().includes(searchLower)) ||
-      (user.phoneNumber?.toLowerCase().includes(searchLower)) ||
-      (user.id?.toString().includes(searchTerm)) ||
-      (user.role?.toLowerCase().includes(searchLower))
+      user.fullName?.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.phoneNumber?.toLowerCase().includes(searchLower) ||
+      user.id?.toString().includes(searchTerm) ||
+      user.role?.toLowerCase().includes(searchLower)
     );
   });
 
-  // Calculate total pages for pagination
   const totalPages = Math.ceil(totalUsers / usersPerPage);
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -135,13 +158,10 @@ export default function UsersDashboard() {
         <main className="p-6">
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <div className="bg-red-500 p-4">
-              <h2 className="text-xl font-bold text-white">
-                Users Management
-              </h2>
+              <h2 className="text-xl font-bold text-white">Users Management</h2>
             </div>
-
             <div className="p-6">
-              {/* Search Section */}
+              {/* Search */}
               <div className="mb-6">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -177,7 +197,7 @@ export default function UsersDashboard() {
                     </>
                   ) : (
                     <div className="text-gray-500 text-lg">
-                      No users available in the system
+                      No users available
                     </div>
                   )}
                 </div>
@@ -188,7 +208,7 @@ export default function UsersDashboard() {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            User ID
+                            ID
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <FiUser className="inline mr-1 text-gray-600" />
@@ -203,7 +223,7 @@ export default function UsersDashboard() {
                             Phone
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Joined Date
+                            Joined
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Role
@@ -263,24 +283,22 @@ export default function UsersDashboard() {
                                     setSelectedUser(user);
                                     setShowUserModal(true);
                                   }}
+                                  title="View"
                                   className="text-gray-800 hover:text-gray-900 transition-colors"
-                                  title="View Details"
                                 >
                                   <FiEye className="h-5 w-5" />
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    toast("Edit functionality coming soon");
-                                  }}
+                                  onClick={() => toast("Edit coming soon")}
+                                  title="Edit"
                                   className="text-gray-800 hover:text-gray-900 transition-colors"
-                                  title="Edit User"
                                 >
                                   <FiEdit className="h-5 w-5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteClick(user.id)}
+                                  title="Delete"
                                   className="text-gray-800 hover:text-gray-900 transition-colors"
-                                  title="Delete User"
                                 >
                                   <FiTrash2 className="h-5 w-5" />
                                 </button>
@@ -296,47 +314,64 @@ export default function UsersDashboard() {
                   {totalUsers > 0 && (
                     <div className="flex items-center justify-between mt-4">
                       <div className="text-sm text-gray-700">
-                        Showing <span className="font-medium">{(currentPage - 1) * usersPerPage + 1}</span> to{" "}
+                        Showing{" "}
+                        <span className="font-medium">
+                          {(currentPage - 1) * usersPerPage + 1}
+                        </span>{" "}
+                        to{" "}
                         <span className="font-medium">
                           {Math.min(currentPage * usersPerPage, totalUsers)}
                         </span>{" "}
-                        of <span className="font-medium">{totalUsers}</span> users
+                        of <span className="font-medium">{totalUsers}</span>{" "}
+                        users
                       </div>
                       <div className="flex space-x-2">
                         <button
                           onClick={() => paginate(Math.max(1, currentPage - 1))}
                           disabled={currentPage === 1}
-                          className={`px-3 py-1 rounded-md ${currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'}`}
+                          className={`px-3 py-1 rounded-md ${
+                            currentPage === 1
+                              ? "bg-gray-200 cursor-not-allowed"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
                         >
                           <FiChevronLeft className="text-gray-600" />
                         </button>
-                        
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          let pageNum;
-                          if (totalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (currentPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (currentPage >= totalPages - 2) {
-                            pageNum = totalPages - 4 + i;
-                          } else {
-                            pageNum = currentPage - 2 + i;
-                          }
-                          return (
-                            <button
-                              key={pageNum}
-                              onClick={() => paginate(pageNum)}
-                              className={`px-3 py-1 rounded-md ${currentPage === pageNum ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        })}
+                        {Array.from(
+                          { length: Math.min(5, totalPages) },
+                          (_, i) => {
+                            let pageNum;
+                            if (totalPages <= 5) pageNum = i + 1;
+                            else if (currentPage <= 3) pageNum = i + 1;
+                            else if (currentPage >= totalPages - 2)
+                              pageNum = totalPages - 4 + i;
+                            else pageNum = currentPage - 2 + i;
 
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => paginate(pageNum)}
+                                className={`px-3 py-1 rounded-md ${
+                                  currentPage === pageNum
+                                    ? "bg-red-500 text-white"
+                                    : "bg-gray-100 hover:bg-gray-200"
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          }
+                        )}
                         <button
-                          onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                          onClick={() =>
+                            paginate(Math.min(totalPages, currentPage + 1))
+                          }
                           disabled={currentPage === totalPages}
-                          className={`px-3 py-1 rounded-md ${currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'}`}
+                          className={`px-3 py-1 rounded-md ${
+                            currentPage === totalPages
+                              ? "bg-gray-200 cursor-not-allowed"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
                         >
                           <FiChevronRight className="text-gray-600" />
                         </button>
@@ -346,7 +381,7 @@ export default function UsersDashboard() {
                 </>
               )}
 
-              {/* User Details Modal */}
+              {/* User Modal */}
               <Modal
                 isOpen={showUserModal}
                 onClose={() => setShowUserModal(false)}
@@ -397,7 +432,7 @@ export default function UsersDashboard() {
                 )}
               </Modal>
 
-              {/* Delete Confirmation Modal */}
+              {/* Delete Modal */}
               <Modal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
@@ -408,8 +443,8 @@ export default function UsersDashboard() {
                     <FiTrash2 className="w-8 h-8 text-red-600" />
                   </div>
                   <p className="text-gray-600 text-center mb-6">
-                    Are you sure you want to delete this user? This
-                    action cannot be undone.
+                    Are you sure you want to delete this user? This action
+                    cannot be undone.
                   </p>
                   <div className="flex space-x-4 w-full">
                     <button
@@ -435,7 +470,7 @@ export default function UsersDashboard() {
   );
 }
 
-// Reusable Modal Component
+// Modal Component
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -445,7 +480,6 @@ interface ModalProps {
 
 const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
@@ -464,7 +498,7 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   );
 };
 
-// Reusable Detail Item Component
+// Detail Item Component
 interface DetailItemProps {
   label: string;
   value: string;

@@ -4,7 +4,7 @@ const isAuthenticated = require("../../middleware/isAuthenticated");
 const router = express.Router();
 
 router.post("/initialize/:bookingId", isAuthenticated, controller.initializePayment);
-router.post("/callback", controller.handleChappaCallback);
-router.get("/verify/:tx_ref", controller.verifyChappaPayment);
+router.post("/callback", isAuthenticated, controller.handleChappaCallback);
+router.get("/verify/:tx_ref", isAuthenticated, controller.verifyChappaPayment);
 
 module.exports = router;

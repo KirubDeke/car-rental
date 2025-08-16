@@ -120,7 +120,15 @@ const getMe = async (req, res) => {
   }
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    res.status(200).json({ authenticated: true, user: decoded });
+
+    const user = await db.users.findByPk(decoded.id, {
+      attributes: ["id", "fullName", "email", "role"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ authenticated: true, user });
   } catch (error) {
     return res.status(403).json({ message: "Invalid or expired token" });
   }
@@ -216,5 +224,5 @@ module.exports = {
   getMe,
   profile,
   getAllUsers,
-  deleteUser
+  deleteUser,
 };
