@@ -4,11 +4,17 @@ import Link from 'next/link';
 import { CarFront, ChevronDown, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from './ThemeProvider';
+import { useAuth } from '../context/AuthContext';
 
 export default function NavbarPrivate() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () =>{
+    await logout()
+  }
 
   return (
     <nav className="bg-white/10 dark:bg-black/10 backdrop-blur-md sticky top-0 z-50">
@@ -17,7 +23,10 @@ export default function NavbarPrivate() {
         <Link href="/home" className="flex items-center md:flex-1">
           <div className="flex items-center space-x-2 text-2xl font-semibold whitespace-nowrap">
             <CarFront size={42} className="text-gray-900 dark:text-white" />
-            <h2 className="text-gray-900 dark:text-white font-bold" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+            <h2
+              className="text-gray-900 dark:text-white font-bold"
+              style={{ fontFamily: 'Orbitron, sans-serif' }}
+            >
               Kirub<span className="text-red-600 dark:text-red-400"> Rental</span>
             </h2>
           </div>
@@ -29,8 +38,18 @@ export default function NavbarPrivate() {
             {['Home', 'Car Fleets', 'About', 'Contact'].map((item) => (
               <li key={item}>
                 <Link
-                  href={item === 'Home' ? '/home' : item === 'Car Fleets' ? '/fleets' : '#'}
-                  className={`${item === 'Home' ? 'text-red-600 dark:text-red-500' : 'text-foreground dark:text-foreground'} hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300 relative group`}
+                  href={
+                    item === 'Home'
+                      ? '/home'
+                      : item === 'Car Fleets'
+                      ? '/fleets'
+                      : '#'
+                  }
+                  className={`${
+                    item === 'Home'
+                      ? 'text-red-600 dark:text-red-500'
+                      : 'text-foreground dark:text-foreground'
+                  } hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300 relative group`}
                 >
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 dark:bg-red-400 transition-all duration-300 group-hover:w-full"></span>
@@ -40,11 +59,12 @@ export default function NavbarPrivate() {
           </ul>
         </div>
 
-        {/* Right Side - Theme Toggle and Profile Dropdown */}
-        <div className="flex items-center md:flex-1 justify-end space-x-4">
+        {/* Right Side - Theme Toggle and Profile Dropdown - Hidden on mobile */}
+        <div className="hidden md:flex items-center md:flex-1 justify-end space-x-4">
+          {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-100 transition-colors"
             aria-label={`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
             {theme === 'light' ? (
@@ -54,45 +74,53 @@ export default function NavbarPrivate() {
             )}
           </button>
 
+          {/* Profile Dropdown */}
           <div className="relative">
             <button
               onClick={() => setProfileOpen(!profileOpen)}
               className="flex items-center space-x-2 focus:outline-none"
             >
               <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                <img 
-                  src="https://randomuser.me/api/portraits/men/32.jpg" 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
-                />
+                {user?.photo ? (
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/users/${user.photo}`}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+                    <User size={20} />
+                  </div>
+                )}
               </div>
-              <ChevronDown 
-                size={16} 
-                className={`transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''} text-gray-700 dark:text-gray-300`}
+              <ChevronDown
+                size={16}
+                className={`transition-transform duration-200 ${
+                  profileOpen ? 'rotate-180' : ''
+                } text-gray-700 dark:text-gray-300`}
               />
             </button>
 
             {/* Profile Dropdown Menu */}
             {profileOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50">
                 <Link
-                  href="#"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  href={`/profile/${user?.id}`}
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <User size={16} className="mr-2" />
                   Profile
                 </Link>
                 <Link
                   href="#"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <Settings size={16} className="mr-2" />
                   Settings
                 </Link>
-                <div className="border-t border-gray-200 dark:border-gray-700"></div>
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   {theme === 'light' ? (
                     <>
@@ -106,28 +134,32 @@ export default function NavbarPrivate() {
                     </>
                   )}
                 </button>
-                <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                <Link
-                  href="#"
-                  className="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                <div className="border-t border-gray-100 dark:border-gray-700"></div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <LogOut size={16} className="mr-2" />
                   Sign Out
-                </Link>
+                </button>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Mobile menu button */}
+        {/* Mobile Menu Button - Always visible on mobile */}
+        <div className="flex md:hidden items-center">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none md:hidden"
+            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none"
             aria-expanded={menuOpen}
           >
             <span className="sr-only">Open main menu</span>
             <svg
-              className={`w-5 h-5 transition-transform duration-300 ${menuOpen ? 'rotate-90' : ''}`}
+              className={`w-5 h-5 transition-transform duration-300 ${
+                menuOpen ? 'rotate-90' : ''
+              }`}
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 17 14"
@@ -145,34 +177,56 @@ export default function NavbarPrivate() {
 
         {/* Mobile Menu */}
         <div
-          className={`${menuOpen ? 'block' : 'hidden'} w-full md:hidden transition-all duration-300 ease-in-out`}
+          className={`${
+            menuOpen ? 'block' : 'hidden'
+          } w-full md:hidden transition-all duration-300 ease-in-out`}
         >
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-4 p-4 space-y-2">
             {['Home', 'Car Fleets', 'About', 'Contact'].map((item) => (
               <Link
                 key={item}
-                href={item === 'Home' ? '/home' : item === 'Car Fleets' ? '/fleets' : '#'}
-                className={`block py-3 px-4 rounded-lg ${item === 'Home' ? 'bg-red-50 dark:bg-gray-700 text-red-600 dark:text-red-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300'} font-medium transition-colors duration-200`}
+                href={
+                  item === 'Home'
+                    ? '/home'
+                    : item === 'Car Fleets'
+                    ? '/fleets'
+                    : '#'
+                }
+                className={`block py-3 px-4 rounded-lg ${
+                  item === 'Home'
+                    ? 'bg-red-50 dark:bg-gray-700 text-red-600 dark:text-red-400'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300'
+                } font-medium transition-colors duration-200`}
               >
                 {item}
               </Link>
             ))}
+
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center px-4 py-3">
                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mr-3">
-                  <img 
-                    src="https://randomuser.me/api/portraits/men/32.jpg" 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
+                  {user?.photo ? (
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/users/${user.photo}`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="text-gray-500" size={20} />
+                  )}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">John Doe</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">john@example.com</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {user?.fullName || 'Guest'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {user?.email || 'Not signed in'}
+                  </p>
                 </div>
               </div>
+
               <Link
-                href="#"
+                href={`/profile/${user?.id}`}
                 className="block py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium transition-colors duration-200"
               >
                 Profile
@@ -183,6 +237,7 @@ export default function NavbarPrivate() {
               >
                 Settings
               </Link>
+              {/* Theme Toggle in Mobile Menu */}
               <button
                 onClick={toggleTheme}
                 className="flex items-center w-full py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium transition-colors duration-200"
@@ -199,12 +254,12 @@ export default function NavbarPrivate() {
                   </>
                 )}
               </button>
-              <Link
-                href="#"
+              <button
+                onClick={() => handleLogout()} 
                 className="block py-2.5 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white text-center font-medium transition-colors duration-200 shadow-sm mt-2"
               >
                 Sign Out
-              </Link>
+              </button>
             </div>
           </div>
         </div>

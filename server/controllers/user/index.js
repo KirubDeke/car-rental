@@ -1,6 +1,9 @@
 const bcrypt = require("bcrypt");
 const db = require("../../models");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs");
+
 
 const signup = async (req, res) => {
   const { fullName, email, phoneNumber, password, role = "user" } = req.body;
@@ -122,7 +125,7 @@ const getMe = async (req, res) => {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
     const user = await db.users.findByPk(decoded.id, {
-      attributes: ["id", "fullName", "email", "role"],
+      attributes: ["id", "fullName", "email", "role", "photo"],
     });
 
     if (!user) {
@@ -216,6 +219,60 @@ const deleteUser = async (req, res) => {
     });
   }
 };
+//get profile
+const getProfile = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await db.users.findByPk(id, {
+      attributes: { exclude: ["password"] },
+    });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Update profile
+const updateProfile = async (req, res) => {
+  try {
+    const  id  = req.params.id; 
+    const user = await db.users.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const { fullName, email, phoneNumber } = req.body;
+    const image = req.file ? req.file.filename : null;
+    let data = { fullName, email, phoneNumber };
+
+    if (image) {
+      // Delete old image if exists
+      if (user.photo) {
+        const oldImagePath = path.join(
+          __dirname,
+          "../../uploads/users",
+          user.photo
+        );
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      data.photo = image; 
+    }
+    await user.update(data);
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 module.exports = {
   signup,
@@ -225,4 +282,6 @@ module.exports = {
   profile,
   getAllUsers,
   deleteUser,
+  getProfile,
+  updateProfile,
 };

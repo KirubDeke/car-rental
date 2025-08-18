@@ -2,8 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface User {
+  photo: any;
   id: number;
   fullName: string;
   email: string;
@@ -24,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const router = useRouter();
   // On mount, check if user is authenticated by calling /me
   useEffect(() => {
     const checkAuth = async () => {
@@ -83,7 +86,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     setLoading(true);
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/users/signout`, {}, { withCredentials: true });
+      await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/users/logout`, {}, { withCredentials: true });
+      toast.success("Log Out successfull")
+      router.push("/home")
       setUser(null);
     } finally {
       setLoading(false);

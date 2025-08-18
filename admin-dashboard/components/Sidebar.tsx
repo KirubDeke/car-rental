@@ -140,7 +140,7 @@ const handleLogout = async () => {
         >
           <FaSignOutAlt className="text-lg mr-3 text-red-500 group-hover:text-red-600" />
           <span className="font-medium text-gray-700 group-hover:text-gray-900">
-            Logout
+            Sign Out
           </span>
         </div>
       </div>

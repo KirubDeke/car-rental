@@ -1,4 +1,5 @@
 const db = require("../../models");
+const { sendBookingConfirmation } = require("../../utils")
 
 const createBooking = async (req, res) => {
   const userId = req.user?.id;
@@ -80,6 +81,13 @@ const createBooking = async (req, res) => {
     await fleet.save({ transaction });
 
     await transaction.commit();
+
+    sendBookingConfirmation({
+      to: email,
+      fullName,
+      fleet,
+      booking,
+    }).catch((err) => console.error("Email sending failed:", err));
 
     res.status(200).json({
       status: "success",
@@ -245,20 +253,44 @@ const deleteBooking = async (req, res) => {
 
   try {
     const booking = await db.bookings.findByPk(id);
+
     if (!booking) {
       return res.status(404).json({
         status: "fail",
         message: "No bookings found",
       });
     }
-    await booking.destroy()
+
+    const fleet = await db.fleets.findByPk(booking.fleetId);
+    if (fleet && Array.isArray(fleet.bookedDates)) {
+      // normalize dates to YYYY-MM-DD
+      const pickupDate = new Date(booking.pickupDate)
+        .toISOString()
+        .split("T")[0];
+      const returnDate = new Date(booking.returnDate)
+        .toISOString()
+        .split("T")[0];
+
+      // filter by startDate and endDate (not pickupDate / returnDate)
+      fleet.bookedDates = fleet.bookedDates.filter(
+        (dateRange) =>
+          !(
+            dateRange.startDate === pickupDate &&
+            dateRange.endDate === returnDate
+          )
+      );
+
+      await fleet.save();
+    }
+
+    await booking.destroy();
 
     return res.status(200).json({
       status: "success",
-      message: "Booking deleted successfully",
+      message: "Booking deleted and fleet updated successfully",
     });
-
   } catch (error) {
+    console.error("Delete booking error:", error);
     return res.status(500).json({
       status: "error",
       message: "Internal server error",
@@ -271,5 +303,5 @@ module.exports = {
   cancelBooking,
   getBookingId,
   getBookingInformation,
-  deleteBooking
+  deleteBooking,
 };
