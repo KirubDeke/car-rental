@@ -62,8 +62,8 @@ db.fleets.hasMany(db.bookings, { foreignKey: "fleetId" });
 db.bookings.belongsTo(db.fleets, { foreignKey: "fleetId", as: "fleet"});
 
 // Booking - Payment
-db.bookings.hasOne(db.payments, { foreignKey: "bookingId" });
-db.payments.belongsTo(db.bookings, { foreignKey: "bookingId" });
+db.bookings.hasOne(db.payments, { foreignKey: "bookingId", as: "payment" });
+db.payments.belongsTo(db.bookings, { foreignKey: "bookingId", as: "booking" });
 
 
 

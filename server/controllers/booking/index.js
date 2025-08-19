@@ -1,5 +1,5 @@
 const db = require("../../models");
-const { sendBookingConfirmation } = require("../../utils")
+const { sendBookingConfirmation } = require("../../utils");
 
 const createBooking = async (req, res) => {
   const userId = req.user?.id;
@@ -106,28 +106,13 @@ const createBooking = async (req, res) => {
 
 const cancelBooking = async (req, res) => {
   const userId = req.user?.id;
-  const fleetId = req.params.id;
+  const bookingId = req.params.bookingId;
 
   try {
-    const user = await db.users.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User not found",
-      });
-    }
-
-    const fleet = await db.fleets.findByPk(fleetId);
-    if (!fleet) {
-      return res.status(404).json({
-        status: "fail",
-        message: "Fleet not found",
-      });
-    }
-
     const booking = await db.bookings.findOne({
-      where: { userId, fleetId },
+      where: { id: bookingId, userId },
     });
+
     if (!booking) {
       return res.status(404).json({
         status: "fail",
@@ -150,6 +135,7 @@ const cancelBooking = async (req, res) => {
     });
   }
 };
+
 
 const getBookingId = async (req, res) => {
   const userId = req.user?.id;
@@ -260,7 +246,6 @@ const deleteBooking = async (req, res) => {
         message: "No bookings found",
       });
     }
-
     const fleet = await db.fleets.findByPk(booking.fleetId);
     if (fleet && Array.isArray(fleet.bookedDates)) {
       // normalize dates to YYYY-MM-DD
@@ -270,7 +255,6 @@ const deleteBooking = async (req, res) => {
       const returnDate = new Date(booking.returnDate)
         .toISOString()
         .split("T")[0];
-
       // filter by startDate and endDate (not pickupDate / returnDate)
       fleet.bookedDates = fleet.bookedDates.filter(
         (dateRange) =>
@@ -279,18 +263,129 @@ const deleteBooking = async (req, res) => {
             dateRange.endDate === returnDate
           )
       );
-
       await fleet.save();
     }
-
     await booking.destroy();
-
     return res.status(200).json({
       status: "success",
       message: "Booking deleted and fleet updated successfully",
     });
   } catch (error) {
     console.error("Delete booking error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+//get bookings history
+const bookingHistory = async (req, res) => {
+  const userId = req.user?.id;
+
+  try {
+    const user = await db.users.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+    const history = await db.bookings.findAll({
+      where: { userId },
+      include: [
+        {
+          model: db.fleets,
+          as: "fleet",
+          attributes: [
+            "model",
+            "brand",
+            "year",
+            "plateNumber",
+            "type",
+            "pricePerDay",
+            "fuelType",
+            "seats",
+            "transmission",
+            "image",
+            "description",
+            "bookedDates",
+          ],
+        },
+        {
+          model: db.payments,
+          as: "payment",
+          attributes: ["id", "amount", "method", "status", "tx_ref", "paidAt"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({
+      status: "success",
+      count: history.length,
+      history,
+    });
+  } catch (error) {
+    console.error("Error fetching booking history:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+//get a single booking
+const singleBookingHistory = async (req, res) => {
+  const userId = req.user?.id;
+  const { bookingId } = req.params; 
+
+  try {
+    const user = await db.users.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+    const booking = await db.bookings.findOne({
+      where: { id: bookingId, userId },
+      include: [
+        {
+          model: db.fleets,
+          as: "fleet",
+          attributes: [
+            "model",
+            "brand",
+            "year",
+            "plateNumber",
+            "type",
+            "pricePerDay",
+            "fuelType",
+            "seats",
+            "transmission",
+            "image",
+            "description",
+            "bookedDates",
+          ],
+        },
+        {
+          model: db.payments,
+          as: "payment", 
+          attributes: ["id", "amount", "method", "status", "tx_ref", "paidAt"],
+        },
+      ],
+    });
+    if (!booking) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Booking not found",
+      });
+    }
+    return res.status(200).json({
+      status: "success",
+      booking,
+    });
+  } catch (error) {
+    console.error("Error fetching single booking history:", error);
     return res.status(500).json({
       status: "error",
       message: "Internal server error",
@@ -304,4 +399,6 @@ module.exports = {
   getBookingId,
   getBookingInformation,
   deleteBooking,
+  bookingHistory,
+  singleBookingHistory,
 };

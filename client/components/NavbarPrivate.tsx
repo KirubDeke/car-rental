@@ -1,10 +1,18 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { CarFront, ChevronDown, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
-import { useState } from 'react';
-import { useTheme } from './ThemeProvider';
-import { useAuth } from '../context/AuthContext';
+import Link from "next/link";
+import {
+  CarFront,
+  ChevronDown,
+  User,
+  Settings,
+  LogOut,
+  Sun,
+  Moon,
+} from "lucide-react";
+import { useState } from "react";
+import { useTheme } from "./ThemeProvider";
+import { useAuth } from "../context/AuthContext";
 
 export default function NavbarPrivate() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,9 +20,9 @@ export default function NavbarPrivate() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
 
-  const handleLogout = async () =>{
-    await logout()
-  }
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <nav className="bg-white/10 dark:bg-black/10 backdrop-blur-md sticky top-0 z-50">
@@ -25,9 +33,10 @@ export default function NavbarPrivate() {
             <CarFront size={42} className="text-gray-900 dark:text-white" />
             <h2
               className="text-gray-900 dark:text-white font-bold"
-              style={{ fontFamily: 'Orbitron, sans-serif' }}
+              style={{ fontFamily: "Orbitron, sans-serif" }}
             >
-              Kirub<span className="text-red-600 dark:text-red-400"> Rental</span>
+              Kirub
+              <span className="text-red-600 dark:text-red-400"> Rental</span>
             </h2>
           </div>
         </Link>
@@ -35,20 +44,22 @@ export default function NavbarPrivate() {
         {/* Desktop Navigation - Centered */}
         <div className="hidden md:flex flex-1 justify-center">
           <ul className="flex space-x-8 font-medium">
-            {['Home', 'Car Fleets', 'About', 'Contact'].map((item) => (
+            {["Home", "Car Fleets", "Contact"].map((item) => (
               <li key={item}>
                 <Link
                   href={
-                    item === 'Home'
-                      ? '/home'
-                      : item === 'Car Fleets'
-                      ? '/fleets'
-                      : '#'
+                    item === "Home"
+                      ? "/home"
+                      : item === "Car Fleets"
+                      ? "/fleets"
+                      : item === "Contact"
+                      ? "/contact"
+                      : "/" 
                   }
                   className={`${
-                    item === 'Home'
-                      ? 'text-red-600 dark:text-red-500'
-                      : 'text-foreground dark:text-foreground'
+                    item === "Home"
+                      ? "text-red-600 dark:text-red-500"
+                      : "text-foreground dark:text-foreground"
                   } hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300 relative group`}
                 >
                   {item}
@@ -65,9 +76,9 @@ export default function NavbarPrivate() {
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-100 transition-colors"
-            aria-label={`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
+            aria-label={`Toggle ${theme === "light" ? "dark" : "light"} mode`}
           >
-            {theme === 'light' ? (
+            {theme === "light" ? (
               <Moon className="w-5 h-5 text-gray-700" />
             ) : (
               <Sun className="w-5 h-5 text-yellow-300" />
@@ -96,7 +107,7 @@ export default function NavbarPrivate() {
               <ChevronDown
                 size={16}
                 className={`transition-transform duration-200 ${
-                  profileOpen ? 'rotate-180' : ''
+                  profileOpen ? "rotate-180" : ""
                 } text-gray-700 dark:text-gray-300`}
               />
             </button>
@@ -112,17 +123,17 @@ export default function NavbarPrivate() {
                   Profile
                 </Link>
                 <Link
-                  href="#"
+                  href={`/booking-history`}
                   className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <Settings size={16} className="mr-2" />
-                  Settings
+                  Booking History
                 </Link>
                 <button
                   onClick={toggleTheme}
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  {theme === 'light' ? (
+                  {theme === "light" ? (
                     <>
                       <Moon size={16} className="mr-2" />
                       Dark Mode
@@ -158,7 +169,7 @@ export default function NavbarPrivate() {
             <span className="sr-only">Open main menu</span>
             <svg
               className={`w-5 h-5 transition-transform duration-300 ${
-                menuOpen ? 'rotate-90' : ''
+                menuOpen ? "rotate-90" : ""
               }`}
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -178,24 +189,24 @@ export default function NavbarPrivate() {
         {/* Mobile Menu */}
         <div
           className={`${
-            menuOpen ? 'block' : 'hidden'
+            menuOpen ? "block" : "hidden"
           } w-full md:hidden transition-all duration-300 ease-in-out`}
         >
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-4 p-4 space-y-2">
-            {['Home', 'Car Fleets', 'About', 'Contact'].map((item) => (
+            {["Home", "Car Fleets", "About", "Contact"].map((item) => (
               <Link
                 key={item}
                 href={
-                  item === 'Home'
-                    ? '/home'
-                    : item === 'Car Fleets'
-                    ? '/fleets'
-                    : '#'
+                  item === "Home"
+                    ? "/home"
+                    : item === "Car Fleets"
+                    ? "/fleets"
+                    : "#"
                 }
                 className={`block py-3 px-4 rounded-lg ${
-                  item === 'Home'
-                    ? 'bg-red-50 dark:bg-gray-700 text-red-600 dark:text-red-400'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300'
+                  item === "Home"
+                    ? "bg-red-50 dark:bg-gray-700 text-red-600 dark:text-red-400"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300"
                 } font-medium transition-colors duration-200`}
               >
                 {item}
@@ -217,10 +228,10 @@ export default function NavbarPrivate() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {user?.fullName || 'Guest'}
+                    {user?.fullName || "Guest"}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {user?.email || 'Not signed in'}
+                    {user?.email || "Not signed in"}
                   </p>
                 </div>
               </div>
@@ -232,17 +243,17 @@ export default function NavbarPrivate() {
                 Profile
               </Link>
               <Link
-                href="#"
+                href={`/booking-history`}
                 className="block py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium transition-colors duration-200"
               >
-                Settings
+                Booking History
               </Link>
               {/* Theme Toggle in Mobile Menu */}
               <button
                 onClick={toggleTheme}
                 className="flex items-center w-full py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium transition-colors duration-200"
               >
-                {theme === 'light' ? (
+                {theme === "light" ? (
                   <>
                     <Moon className="w-5 h-5 mr-2" />
                     Dark Mode
@@ -255,7 +266,7 @@ export default function NavbarPrivate() {
                 )}
               </button>
               <button
-                onClick={() => handleLogout()} 
+                onClick={() => handleLogout()}
                 className="block py-2.5 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white text-center font-medium transition-colors duration-200 shadow-sm mt-2"
               >
                 Sign Out

@@ -28,11 +28,23 @@ export default function NavbarPublic() {
         {/* Desktop Navigation - Centered */}
         <div className="hidden md:flex flex-1 justify-center">
           <ul className="flex space-x-8 font-medium">
-            {['Home', 'Car Fleets', 'About', 'Contact'].map((item) => (
+            {['Home', 'Car Fleets', 'Contact'].map((item) => (
               <li key={item}>
-                <Link
-                  href={item === 'Home' ? '/home' : item === 'Car Fleets' ? '/fleets' : '#'}
-                  className={`${item === 'Home' ? 'text-red-600 dark:text-red-500' : 'text-foreground dark:text-foreground'} hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300 relative group`}
+                  <Link
+                  href={
+                    item === "Home"
+                      ? "/home"
+                      : item === "Car Fleets"
+                      ? "/fleets"
+                      : item === "Contact"
+                      ? "/contact"
+                      : "/" 
+                  }
+                  className={`${
+                    item === "Home"
+                      ? "text-red-600 dark:text-red-500"
+                      : "text-foreground dark:text-foreground"
+                  } hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300 relative group`}
                 >
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 dark:bg-red-400 transition-all duration-300 group-hover:w-full"></span>
