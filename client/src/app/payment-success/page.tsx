@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-export default function PaymentSuccessPage() {
+function PaymentContent() {
     const searchParams = useSearchParams();
     const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed'>('pending');
     const router = useRouter();
@@ -88,5 +88,22 @@ export default function PaymentSuccessPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function PaymentSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-background dark:bg-background px-4">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500 mx-auto mb-4"></div>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+                        Loading...
+                    </h2>
+                </div>
+            </div>
+        }>
+            <PaymentContent />
+        </Suspense>
     );
 }
