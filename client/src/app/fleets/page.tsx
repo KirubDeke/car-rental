@@ -4,8 +4,30 @@ import { useEffect, useState } from 'react';
 import CarCard from '../../../components/CarCard';
 import axios from 'axios';
 
+interface Car {
+  id: number;
+  brand: string;
+  model: string;
+  year: number;
+  type: string;
+  plateNumber: string;
+  pricePerDay: string;
+  fuelType: string;
+  seats: number;
+  transmission: string;
+  availability: boolean;
+  image: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CarWithAvailability extends Car {
+  available: boolean;
+}
+
 export default function FleetPage() {
-  const [cars, setCars] = useState<any[]>([]);
+  const [cars, setCars] = useState<CarWithAvailability[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
@@ -14,11 +36,11 @@ export default function FleetPage() {
       try {
         // 1. Fetch all cars
         const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/all`);
-        const fleets = res.data.data;
+        const fleets: Car[] = res.data.data;
 
         // 2. Fetch availability for each car in parallel
         const fleetsWithAvailability = await Promise.all(
-          fleets.map(async (car: any) => {
+          fleets.map(async (car: Car) => {
             try {
               const availabilityRes = await axios.get(
                 `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/isAvailable/${car.id}`

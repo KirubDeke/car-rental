@@ -423,7 +423,7 @@ const BookingHistory = () => {
           No Bookings Yet
         </h2>
         <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-md mx-auto">
-          You haven't made any bookings with us yet. Start exploring our fleet
+          You haven&apos;t made any bookings with us yet. Start exploring our fleet
           of vehicles and plan your next adventure!
         </p>
         <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">

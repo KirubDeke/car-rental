@@ -30,7 +30,7 @@ export default function Testimonies() {
                                 </div>
 
                                 <blockquote className="relative">
-                                    <p className="text-lg tracking-tight text-foreground dark:text-foreground">"I love the car I rented from this site. The quality is exceptional and the prices are unbeatable. Will definitely rent again!"</p>
+                                    <p className="text-lg tracking-tight text-foreground dark:text-foreground">&quot;I love the car I rented from this site. The quality is exceptional and the prices are unbeatable. Will definitely rent again!&quot;</p>
                                 </blockquote>
 
                                 <figcaption className="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
@@ -61,7 +61,7 @@ export default function Testimonies() {
                                 </div>
 
                                 <blockquote className="relative">
-                                    <p className="text-lg tracking-tight text-foreground dark:text-foreground">"The car was in perfect condition and the rental process was seamless. Customer service was exceptional when I had questions."</p>
+                                    <p className="text-lg tracking-tight text-foreground dark:text-foreground">&quot;The car was in perfect condition and the rental process was seamless. Customer service was exceptional when I had questions.&quot;</p>
                                 </blockquote>
 
                                 <figcaption className="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
@@ -94,7 +94,7 @@ export default function Testimonies() {
                                 </div>
 
                                 <blockquote className="relative">
-                                    <p className="text-lg tracking-tight text-foreground dark:text-foreground">"Great selection of vehicles at competitive prices. The pickup process was quick and easy. Only suggestion would be more late model options."</p>
+                                    <p className="text-lg tracking-tight text-foreground dark:text-foreground">&quot;Great selection of vehicles at competitive prices. The pickup process was quick and easy. Only suggestion would be more late model options.&quot;</p>
                                 </blockquote>
 
                                 <figcaption className="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-6">

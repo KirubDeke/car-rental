@@ -59,7 +59,7 @@ export default function CarDetailPage() {
         const carRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/car/${id}`
         );
-        let carData = carRes.data.data;
+        const carData = carRes.data.data;
         const todayDate = new Date().toISOString().split("T")[0];
         const availRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/isAvailable/${id}?date=${todayDate}`
@@ -140,7 +140,7 @@ export default function CarDetailPage() {
             Car Not Found
           </h2>
           <p className="text-gray-500 dark:text-gray-300 mb-4">
-            The car you're looking for doesn't exist or may have been removed.
+            The car you&apos;re looking for doesn&apos;t exist or may have been removed.
           </p>
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 mx-auto"

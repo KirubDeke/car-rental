@@ -179,8 +179,8 @@ export default function ContactPage() {
             </Link>
           </div>
           <p className="text-xl text-foreground dark:text-foreground max-w-3xl mx-auto">
-            We'd love to hear from
-            you. Send us a message and we'll respond as soon as possible.
+            We&apos;d love to hear from
+            you. Send us a message and we&apos;ll respond as soon as possible.
           </p>
         </div>
 
@@ -442,7 +442,7 @@ export default function ContactPage() {
                   <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center">
                     <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
                     <p className="text-green-800 dark:text-green-300">
-                      Thank you! Your message has been sent successfully. We'll
+                      Thank you! Your message has been sent successfully. We&apos;ll
                       get back to you soon.
                     </p>
                   </div>

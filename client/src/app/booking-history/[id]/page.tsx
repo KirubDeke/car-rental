@@ -222,7 +222,7 @@ export default function SingleBookingPage() {
             Booking Not Found
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            The booking you're looking for doesn't exist or you don't have
+            The booking you&apos;re looking for doesn&apos;t exist or you don&apos;t have
             permission to view it.
           </p>
           <button
