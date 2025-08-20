@@ -1,14 +1,23 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams, useRouter } from "next/navigation";
 import {
-  Car as CarIcon, Fuel, Cog, Users, BadgeInfo,
-  CheckCircle2, XCircle, CalendarDays, MapPin, X,
-  ArrowLeft
-} from 'lucide-react';
-import ButtonOne from '../../../../components/ui/ButtonOne';
+  Car as CarIcon,
+  Fuel,
+  Cog,
+  Users,
+  BadgeInfo,
+  CheckCircle2,
+  XCircle,
+  CalendarDays,
+  MapPin,
+  X,
+  ArrowLeft,
+} from "lucide-react";
+import ButtonOne from "../../../../components/ui/ButtonOne";
+import { useAuth } from "../../../../context/AuthContext";
 
 interface Car {
   id: number;
@@ -36,31 +45,28 @@ export default function CarDetailPage() {
   const [error, setError] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [formData, setFormData] = useState({
-    startDate: '',
-    endDate: '',
-    pickupLocation: ''
+    startDate: "",
+    endDate: "",
+    pickupLocation: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState("");
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchCarAndAvailability = async () => {
       try {
-        // Fetch car details
         const carRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/car/${id}`
         );
         let carData = carRes.data.data;
-
-        // Call availability API with today's date if startDate not provided yet
-        const todayDate = new Date().toISOString().split('T')[0];
+        const todayDate = new Date().toISOString().split("T")[0];
         const availRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/isAvailable/${id}?date=${todayDate}`
         );
 
         carData.availability = availRes.data.available;
         setCar(carData);
-
       } catch (err) {
         console.error(err);
         setError(true);
@@ -72,24 +78,24 @@ export default function CarDetailPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setFormError('');
+    setFormError("");
 
     try {
       if (!formData.startDate || !formData.endDate) {
-        throw new Error('Please fill all required fields');
+        throw new Error("Please fill all required fields");
       }
 
       if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-        throw new Error('End date must be after start date');
+        throw new Error("End date must be after start date");
       }
 
       // Check availability for selected start date
@@ -98,27 +104,28 @@ export default function CarDetailPage() {
       );
 
       if (!availRes.data.available) {
-        throw new Error('This car is not available for the selected start date');
+        throw new Error(
+          "This car is not available for the selected start date"
+        );
       }
 
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      const calculated = totalDays * parseInt(car?.pricePerDay || '0');
+      const calculated = totalDays * parseInt(car?.pricePerDay || "0");
 
       const queryParams = new URLSearchParams({
         startDate: formData.startDate,
         endDate: formData.endDate,
         pickupLocation: formData.pickupLocation,
         totalDays: totalDays.toString(),
-        totalPrice: calculated.toString()
+        totalPrice: calculated.toString(),
       }).toString();
 
       router.push(`/booking-confirmation/${id}?${queryParams}`);
-
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Booking failed');
+      setFormError(err instanceof Error ? err.message : "Booking failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -129,11 +136,15 @@ export default function CarDetailPage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
         <div className="text-center max-w-md p-6 bg-white rounded-xl shadow-md dark:bg-gray-800">
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">Car Not Found</h2>
-          <p className="text-gray-500 dark:text-gray-300 mb-4">The car you're looking for doesn't exist or may have been removed.</p>
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
+            Car Not Found
+          </h2>
+          <p className="text-gray-500 dark:text-gray-300 mb-4">
+            The car you're looking for doesn't exist or may have been removed.
+          </p>
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 mx-auto"
-            onClick={() => router.push('/')}
+            onClick={() => router.push("/")}
           >
             <CarIcon className="w-4 h-4" />
             Browse Available Cars
@@ -147,16 +158,16 @@ export default function CarDetailPage() {
     return <div className="text-center py-20">Loading car details...</div>;
   }
 
-  const price = parseInt(car.pricePerDay).toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'ETB',
+  const price = parseInt(car.pricePerDay).toLocaleString("en-US", {
+    style: "currency",
+    currency: "ETB",
     maximumFractionDigits: 0,
   });
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <button
-        onClick={() => router.push('/home')}
+        onClick={() => router.push("/home")}
         className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
@@ -164,7 +175,7 @@ export default function CarDetailPage() {
       </button>
 
       {showBookingForm && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full relative">
             <button
               onClick={() => setShowBookingForm(false)}
@@ -198,7 +209,7 @@ export default function CarDetailPage() {
                       type="date"
                       name="startDate"
                       required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={new Date().toISOString().split("T")[0]}
                       value={formData.startDate}
                       onChange={handleInputChange}
                       className="pl-10 py-3 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -218,7 +229,10 @@ export default function CarDetailPage() {
                       type="date"
                       name="endDate"
                       required
-                      min={formData.startDate || new Date().toISOString().split('T')[0]}
+                      min={
+                        formData.startDate ||
+                        new Date().toISOString().split("T")[0]
+                      }
                       value={formData.endDate}
                       onChange={handleInputChange}
                       className="pl-10 py-3 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -252,7 +266,7 @@ export default function CarDetailPage() {
                     disabled={isSubmitting}
                     className="w-full"
                   >
-                    {isSubmitting ? 'Processing...' : 'Continue to Booking'}
+                    {isSubmitting ? "Processing..." : "Continue to Booking"}
                   </ButtonOne>
                 </div>
               </form>
@@ -286,22 +300,33 @@ export default function CarDetailPage() {
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-              {car.brand} {car.model} <span className="text-red-500">({car.year})</span>
+              {car.brand} {car.model}{" "}
+              <span className="text-red-500">({car.year})</span>
             </h1>
-            <p className="text-lg text-gray-700 dark:text-gray-300 mt-2">{car.type}</p>
+            <p className="text-lg text-gray-700 dark:text-gray-300 mt-2">
+              {car.type}
+            </p>
           </div>
 
           <div className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/30 rounded-xl p-5">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">Daily rate</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Daily rate
+                </p>
                 <p className="text-2xl font-bold text-red-500">{price}</p>
               </div>
               <ButtonOne
-                onClick={() => setShowBookingForm(true)}
+                onClick={() => {
+                  if (!user) {
+                    router.push("/signup");
+                  } else {
+                    setShowBookingForm(true);
+                  }
+                }}
                 disabled={!car.availability}
               >
-                {car.availability ? 'Book Now' : 'Not Available'}
+                {car.availability ? "Book Now" : "Not Available"}
               </ButtonOne>
             </div>
           </div>
@@ -311,16 +336,42 @@ export default function CarDetailPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Feature icon={<CarIcon className="w-5 h-5" />} label="Vehicle Type" value={car.type} />
-            <Feature icon={<Fuel className="w-5 h-5" />} label="Fuel Type" value={car.fuelType} />
-            <Feature icon={<Cog className="w-5 h-5" />} label="Transmission" value={car.transmission} />
-            <Feature icon={<Users className="w-5 h-5" />} label="Seating Capacity" value={`${car.seats} people`} />
-            <Feature icon={<BadgeInfo className="w-5 h-5" />} label="Plate Number" value={car.plateNumber} />
             <Feature
-              icon={car.availability ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
+              icon={<CarIcon className="w-5 h-5" />}
+              label="Vehicle Type"
+              value={car.type}
+            />
+            <Feature
+              icon={<Fuel className="w-5 h-5" />}
+              label="Fuel Type"
+              value={car.fuelType}
+            />
+            <Feature
+              icon={<Cog className="w-5 h-5" />}
+              label="Transmission"
+              value={car.transmission}
+            />
+            <Feature
+              icon={<Users className="w-5 h-5" />}
+              label="Seating Capacity"
+              value={`${car.seats} people`}
+            />
+            <Feature
+              icon={<BadgeInfo className="w-5 h-5" />}
+              label="Plate Number"
+              value={car.plateNumber}
+            />
+            <Feature
+              icon={
+                car.availability ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-red-500" />
+                )
+              }
               label="Availability"
-              value={car.availability ? 'Available Now' : 'Currently Booked'}
-              valueClass={car.availability ? 'text-green-600' : 'text-red-600'}
+              value={car.availability ? "Available Now" : "Currently Booked"}
+              valueClass={car.availability ? "text-green-600" : "text-red-600"}
             />
           </div>
         </div>
@@ -333,7 +384,7 @@ function Feature({
   icon,
   label,
   value,
-  valueClass = '',
+  valueClass = "",
 }: {
   icon: React.ReactNode;
   label: string;

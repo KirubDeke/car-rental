@@ -21,7 +21,7 @@ export function CTABanner() {
             </div>
             <div className="flex-shrink-0">
               <Link
-                href="/rentals"
+                href="/contact"
                 className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-red-600 bg-white hover:bg-gray-50 rounded-lg transition-all duration-300 group"
               >
                 <span>Book Now</span>

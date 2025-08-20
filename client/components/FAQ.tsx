@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ButtonOne from './ui/ButtonOne';
+import { useRouter } from 'next/navigation';
 
 interface FAQItem {
   question: string;
@@ -10,6 +11,7 @@ interface FAQItem {
 
 export default function CarRentalFAQ() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const router = useRouter();
 
   const faqs: FAQItem[] = [
     {
@@ -103,6 +105,7 @@ export default function CarRentalFAQ() {
 
         <div className="mt-12 text-center">
           <ButtonOne
+          onClick={() => router.push("/contact")}
             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-red-500 hover:bg-red-600 transition-colors duration-200 dark:focus:ring-offset-gray-900"
           >
             Need more help? Contact Us

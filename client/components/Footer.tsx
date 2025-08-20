@@ -22,16 +22,16 @@ const Footer = () => {
                         </p>
 
                         <div className="flex mt-6 space-x-6">
-                            <Link href="#" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                            <Link href="/contact" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
                                 <Facebook className="w-6 h-6" />
                             </Link>
-                            <Link href="#" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                            <Link href="/contact" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
                                 <Twitter className="w-6 h-6" />
                             </Link>
-                            <Link href="#" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                            <Link href="/contact" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
                                 <Instagram className="w-6 h-6" />
                             </Link>
-                            <Link href="#" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                            <Link href="/contact" className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
                                 <Linkedin className="w-6 h-6" />
                             </Link>
                         </div>
@@ -41,17 +41,8 @@ const Footer = () => {
                     <div>
                         <h3 className="text-lg font-semibold">Quick Links</h3>
                         <nav className="flex flex-col mt-4 space-y-2">
-                            <Link href="/about" className="text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition">
-                                About Us
-                            </Link>
-                            <Link href="/fleet" className="text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition">
-                                Our Fleet
-                            </Link>
-                            <Link href="/pricing" className="text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition">
-                                Pricing
-                            </Link>
-                            <Link href="/blog" className="text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition">
-                                Blog
+                            <Link href="/contact" className="text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition">
+                                Contact Us
                             </Link>
                         </nav>
                     </div>
@@ -60,10 +51,9 @@ const Footer = () => {
                     <div>
                         <h3 className="text-lg font-semibold">Contact Us</h3>
                         <div className="flex flex-col mt-4 space-y-2 text-gray-600 dark:text-gray-400">
-                            <p>123 Rental Street</p>
-                            <p>City, State 10001</p>
-                            <p>Phone: (123) 456-7890</p>
-                            <p>Email: info@kirubrentals.com</p>
+                            <p>Addis Ababa, Ethiopia</p>
+                            <p>Phone: +(251) 983716565</p>
+                            <p>Email: fistumkirubeldeke@gmail.com</p>
                         </div>
                     </div>
                 </div>
@@ -76,13 +66,13 @@ const Footer = () => {
                         </p>
 
                         <div className="flex mt-4 space-x-6 md:mt-0">
-                            <Link href="/privacy" className="text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                            <Link href="/contact" className="text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
                                 Privacy Policy
                             </Link>
-                            <Link href="/terms" className="text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                            <Link href="/contact" className="text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
                                 Terms of Service
                             </Link>
-                            <Link href="/cookies" className="text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                            <Link href="/contact" className="text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
                                 Cookie Policy
                             </Link>
                         </div>

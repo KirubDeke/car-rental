@@ -8,6 +8,7 @@ const fleet = require("./routes/fleets");
 const booking = require("./routes/bookings");
 const chappa = require("./routes/chappa");
 const admin = require("./routes/admin");
+const contact = require("./routes/contact");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -61,6 +62,7 @@ app.use("/kirub-rental/users", user);
 app.use("/kirub-rental/fleets", fleet, booking);
 app.use("/kirub-rental/chappa", chappa);
 app.use("/kirub-rental/admin", admin);
+app.use("/kirub-rental", contact);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

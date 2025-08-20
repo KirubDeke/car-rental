@@ -394,7 +394,6 @@ export default function BookingConfirmationPage() {
       <div className="flex justify-between items-center mb-8">
         <ButtonOne
           onClick={() => router.back()}
-          // variant="ghost"
           className="flex items-center gap-2 text-gray-600 dark:text-gray-300"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -402,13 +401,6 @@ export default function BookingConfirmationPage() {
         </ButtonOne>
 
         <div className="flex items-center gap-4">
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors"
-          >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-          
           <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
             booking.status === 'confirmed' 
               ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
@@ -655,7 +647,6 @@ export default function BookingConfirmationPage() {
               <ButtonOne
                 onClick={handleCancelBooking}
                 disabled={isCanceling}
-                // variant="destructive"
                 className="w-full flex items-center justify-center gap-3"
               >
                 {isCanceling ? (

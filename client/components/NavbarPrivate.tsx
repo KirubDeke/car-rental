@@ -5,7 +5,7 @@ import {
   CarFront,
   ChevronDown,
   User,
-  Settings,
+  History,
   LogOut,
   Sun,
   Moon,
@@ -13,16 +13,31 @@ import {
 import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import { useAuth } from "../context/AuthContext";
+import { usePathname } from "next/navigation";
 
 export default function NavbarPrivate() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await logout();
   };
+
+  const isActiveLink = (path: string) => {
+    if (path === "/home") {
+      return pathname === "/home";
+    }
+    return pathname.startsWith(path);
+  };
+
+  const navItems = [
+    { name: "Home", path: "/home" },
+    { name: "Car Fleets", path: "/fleets" },
+    { name: "Contact", path: "/contact" },
+  ];
 
   return (
     <nav className="bg-white/10 dark:bg-black/10 backdrop-blur-md sticky top-0 z-50">
@@ -44,26 +59,20 @@ export default function NavbarPrivate() {
         {/* Desktop Navigation - Centered */}
         <div className="hidden md:flex flex-1 justify-center">
           <ul className="flex space-x-8 font-medium">
-            {["Home", "Car Fleets", "Contact"].map((item) => (
-              <li key={item}>
+            {navItems.map((item) => (
+              <li key={item.name}>
                 <Link
-                  href={
-                    item === "Home"
-                      ? "/home"
-                      : item === "Car Fleets"
-                      ? "/fleets"
-                      : item === "Contact"
-                      ? "/contact"
-                      : "/" 
-                  }
+                  href={item.path}
                   className={`${
-                    item === "Home"
+                    isActiveLink(item.path)
                       ? "text-red-600 dark:text-red-500"
                       : "text-foreground dark:text-foreground"
                   } hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300 relative group`}
                 >
-                  {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 dark:bg-red-400 transition-all duration-300 group-hover:w-full"></span>
+                  {item.name}
+                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-red-600 dark:bg-red-400 transition-all duration-300 ${
+                    isActiveLink(item.path) ? "w-full" : "w-0 group-hover:w-full"
+                  }`}></span>
                 </Link>
               </li>
             ))}
@@ -126,7 +135,7 @@ export default function NavbarPrivate() {
                   href={`/booking-history`}
                   className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  <Settings size={16} className="mr-2" />
+                  <History size={16} className="mr-2" />
                   Booking History
                 </Link>
                 <button
@@ -193,23 +202,17 @@ export default function NavbarPrivate() {
           } w-full md:hidden transition-all duration-300 ease-in-out`}
         >
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-4 p-4 space-y-2">
-            {["Home", "Car Fleets", "About", "Contact"].map((item) => (
+            {navItems.map((item) => (
               <Link
-                key={item}
-                href={
-                  item === "Home"
-                    ? "/home"
-                    : item === "Car Fleets"
-                    ? "/fleets"
-                    : "#"
-                }
+                key={item.name}
+                href={item.path}
                 className={`block py-3 px-4 rounded-lg ${
-                  item === "Home"
+                  isActiveLink(item.path)
                     ? "bg-red-50 dark:bg-gray-700 text-red-600 dark:text-red-400"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300"
                 } font-medium transition-colors duration-200`}
               >
-                {item}
+                {item.name}
               </Link>
             ))}
 

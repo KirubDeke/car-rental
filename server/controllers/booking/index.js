@@ -104,6 +104,7 @@ const createBooking = async (req, res) => {
   }
 };
 
+// cancel booking (and remove booked dates)
 const cancelBooking = async (req, res) => {
   const userId = req.user?.id;
   const bookingId = req.params.bookingId;
@@ -120,21 +121,38 @@ const cancelBooking = async (req, res) => {
       });
     }
 
+    const fleet = await db.fleets.findByPk(booking.fleetId);
+    if (fleet && Array.isArray(fleet.bookedDates)) {
+      const pickupDate = new Date(booking.pickupDate)
+        .toISOString()
+        .split("T")[0];
+      const returnDate = new Date(booking.returnDate)
+        .toISOString()
+        .split("T")[0];
+      fleet.bookedDates = fleet.bookedDates.filter(
+        (dateRange) =>
+          !(
+            dateRange.startDate === pickupDate &&
+            dateRange.endDate === returnDate
+          )
+      );
+      await fleet.save();
+    }
     await booking.update({ status: "cancelled" });
-
     return res.status(200).json({
       status: "success",
-      message: "Booking cancelled successfully",
+      message: "Booking cancelled successfully and fleet updated",
       data: booking,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Cancel booking error:", error);
     return res.status(500).json({
       status: "error",
       message: "An error occurred while cancelling the booking",
     });
   }
 };
+
 
 
 const getBookingId = async (req, res) => {
@@ -255,7 +273,6 @@ const deleteBooking = async (req, res) => {
       const returnDate = new Date(booking.returnDate)
         .toISOString()
         .split("T")[0];
-      // filter by startDate and endDate (not pickupDate / returnDate)
       fleet.bookedDates = fleet.bookedDates.filter(
         (dateRange) =>
           !(
