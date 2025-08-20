@@ -695,7 +695,7 @@ export default function BookingConfirmationPage() {
                   Proceed with {selectedPayment.replace('_', ' ')} payment
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-200 mb-4">
-                  You'll be redirected to complete your payment securely
+                  You&apos;ll be redirected to complete your payment securely
                 </p>
                 <ButtonOne
                   onClick={handlePayment}
