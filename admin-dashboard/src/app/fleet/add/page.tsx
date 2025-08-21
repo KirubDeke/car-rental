@@ -116,12 +116,9 @@ export default function CarCreationForm() {
       } else {
         toast.error(response.data.message || "Failed to create car");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating car:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to create car. Please try again."
-      );
+      toast.error(  "Failed to create car. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -186,7 +186,7 @@ export default function UsersDashboard() {
                   {searchTerm ? (
                     <>
                       <div className="text-gray-500 text-lg mb-2">
-                        No users found matching "{searchTerm}"
+                        No users found matching &quot;{searchTerm}&quot;
                       </div>
                       <button
                         onClick={() => setSearchTerm("")}

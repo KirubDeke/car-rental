@@ -17,6 +17,13 @@ import Sidebar from "../../../../components/Sidebar";
 import { useAuth } from "../../../../context/AuthContext";
 import { useRouter } from "next/navigation";
 
+interface BookedDate {
+  startDate: string;
+  endDate: string;
+  userId: number;
+  bookingId: number;
+}
+
 interface Fleet {
   id: number;
   brand: string;
@@ -30,7 +37,7 @@ interface Fleet {
   transmission: string;
   image: string;
   description: string;
-  bookedDates: any[];
+  bookedDates: BookedDate[];
   maintenanceMode: boolean;
   createdAt: string;
   updatedAt: string;
@@ -425,7 +432,7 @@ export default function FleetManagement() {
                           </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-colspan-2 gap-6">
                           {/* Image Upload Section */}
                           <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
