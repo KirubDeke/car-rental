@@ -17,6 +17,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://kirub-rental.vercel.app",
+  "https://rental-dashboard-psi.vercel.app"
   // "https://curious-life.vercel.app"
 ];
 
