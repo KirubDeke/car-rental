@@ -1,15 +1,31 @@
-'use client';
+"use client";
 
-import { useEffect, useState, MouseEvent } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
+import { useEffect, useState, MouseEvent } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import axios, { AxiosError } from "axios";
 import {
-  ArrowLeft, CheckCircle2, XCircle, CalendarDays, MapPin,
-  Car, Fuel, Cog, Users, Edit2, Check, X,
-  CreditCard, Banknote, ChevronRight, Smartphone, DollarSign, Moon, Sun
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import ButtonOne from '../../../../components/ui/ButtonOne';
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  CalendarDays,
+  MapPin,
+  Car,
+  Fuel,
+  Cog,
+  Users,
+  Edit2,
+  Check,
+  X,
+  CreditCard,
+  Banknote,
+  ChevronRight,
+  Smartphone,
+  DollarSign,
+  Moon,
+  Sun,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import ButtonOne from "../../../../components/ui/ButtonOne";
 
 interface Fleet {
   id: number;
@@ -41,7 +57,7 @@ interface Booking {
   pickupLocation: string;
   User: User;
   Fleet: Fleet;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: "pending" | "confirmed" | "cancelled";
 }
 
 interface EditData {
@@ -50,31 +66,37 @@ interface EditData {
   email: string;
 }
 
-type PaymentMethod = 'chapa' | 'mobile_banking' | 'cash' | 'bank_transfer' | 'paypal' | '';
+type PaymentMethod =
+  | "chapa"
+  | "mobile_banking"
+  | "cash"
+  | "bank_transfer"
+  | "paypal"
+  | "";
 
 export default function BookingConfirmationPage() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const startDate = searchParams.get('startDate') || '';
-  const endDate = searchParams.get('endDate') || '';
-  const pickupLocation = searchParams.get('pickupLocation') || '';
-  const totalDays = parseInt(searchParams.get('totalDays') || '0', 10);
-  const totalPrice = parseFloat(searchParams.get('totalPrice') || '0');
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
+  const pickupLocation = searchParams.get("pickupLocation") || "";
+  const totalDays = parseInt(searchParams.get("totalDays") || "0", 10);
+  const totalPrice = parseFloat(searchParams.get("totalPrice") || "0");
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [actualBookingId, setActualBookingId] = useState<string | null>(null);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [isEditingUserInfo, setIsEditingUserInfo] = useState<boolean>(false);
   const [editData, setEditData] = useState<EditData>({
-    fullName: '',
-    phoneNumber: '',
-    email: ''
+    fullName: "",
+    phoneNumber: "",
+    email: "",
   });
   const [isCanceling, setIsCanceling] = useState<boolean>(false);
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('');
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("");
   const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
 
@@ -82,21 +104,23 @@ export default function BookingConfirmationPage() {
     const newMode = !darkMode;
     setDarkMode(newMode);
     if (newMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   };
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+    const savedTheme = localStorage.getItem("theme");
+    const systemDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+
+    if (savedTheme === "dark" || (!savedTheme && systemDark)) {
       setDarkMode(true);
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     }
   }, []);
 
@@ -122,22 +146,24 @@ export default function BookingConfirmationPage() {
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/users/profile`,
           { withCredentials: true }
         );
-        if (profileRes.data.status !== 'success') {
+        if (profileRes.data.status !== "success") {
           throw new Error("Failed to fetch user profile");
         }
         const userData = profileRes.data.data;
         setEditData({
-          fullName: userData.fullName || '',
-          phoneNumber: userData.phoneNumber || '',
-          email: userData.email || ''
+          fullName: userData.fullName || "",
+          phoneNumber: userData.phoneNumber || "",
+          email: userData.email || "",
         });
         if (!userData.fullName || !userData.phoneNumber || !userData.email) {
           setIsEditingUserInfo(true);
         }
       } catch (err) {
         const error = err as Error;
-        console.error('Failed to fetch user profile:', error);
-        setError('Failed to load user information. Please fill in your details.');
+        console.error("Failed to fetch user profile:", error);
+        setError(
+          "Failed to load user information. Please fill in your details."
+        );
         setIsEditingUserInfo(true);
       }
     };
@@ -148,7 +174,7 @@ export default function BookingConfirmationPage() {
     const fetchBooking = async () => {
       try {
         if (!id) {
-          throw new Error('Booking ID is missing');
+          throw new Error("Booking ID is missing");
         }
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/car/${id}`,
@@ -166,7 +192,7 @@ export default function BookingConfirmationPage() {
           fuelType: apiData.fuelType,
           seats: apiData.seats,
           transmission: apiData.transmission,
-          image: apiData.image
+          image: apiData.image,
         };
         const combinedData: Booking = {
           id: id.toString(),
@@ -175,20 +201,20 @@ export default function BookingConfirmationPage() {
           totalDate: totalDays,
           totalPrice: totalPrice,
           pickupLocation: pickupLocation,
-          status: 'pending',
+          status: "pending",
           User: {
-            id: '',
+            id: "",
             fullName: editData.fullName,
             phoneNumber: editData.phoneNumber,
-            email: editData.email
+            email: editData.email,
           },
-          Fleet: fleetData
+          Fleet: fleetData,
         };
         setBooking(combinedData);
       } catch (err) {
         const error = err as AxiosError | Error;
-        setError(error.message || 'Failed to fetch booking information');
-        console.error('Fetch booking error:', error);
+        setError(error.message || "Failed to fetch booking information");
+        console.error("Fetch booking error:", error);
       }
     };
     fetchBooking();
@@ -198,9 +224,11 @@ export default function BookingConfirmationPage() {
     setIsEditingUserInfo(!isEditingUserInfo);
   };
 
-  const handleUserInfoChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleUserInfoChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void => {
     const { name, value } = e.target;
-    setEditData(prev => ({ ...prev, [name]: value }));
+    setEditData((prev) => ({ ...prev, [name]: value }));
   };
 
   const saveUserInfo = (): void => {
@@ -211,8 +239,8 @@ export default function BookingConfirmationPage() {
         ...booking.User,
         fullName: editData.fullName,
         phoneNumber: editData.phoneNumber,
-        email: editData.email
-      }
+        email: editData.email,
+      },
     };
     setBooking(updatedBooking);
     setIsEditingUserInfo(false);
@@ -222,7 +250,7 @@ export default function BookingConfirmationPage() {
     setIsConfirming(true);
     try {
       if (!id || !booking) {
-        throw new Error('Missing booking data');
+        throw new Error("Missing booking data");
       }
       await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/book-fleet/${id}`,
@@ -233,18 +261,18 @@ export default function BookingConfirmationPage() {
           totalPrice: booking.totalPrice || totalPrice,
           fullName: editData.fullName,
           email: editData.email,
-          phoneNumber: editData.phoneNumber
+          phoneNumber: editData.phoneNumber,
         },
         { withCredentials: true }
       );
-      setBooking(prev => prev ? { ...prev, status: 'confirmed' } : null);
-      toast.success('Booking confirmed successfully!');
+      setBooking((prev) => (prev ? { ...prev, status: "confirmed" } : null));
+      toast.success("Booking confirmed successfully!");
       fetchBookingId(id);
     } catch (err) {
       const error = err as AxiosError | Error;
-      setError(error.message || 'Failed to confirm booking');
-      console.error('Confirm booking error:', error);
-      toast.error(error.message || 'Failed to confirm booking');
+      setError(error.message || "Failed to confirm booking");
+      console.error("Confirm booking error:", error);
+      toast.error(error.message || "Failed to confirm booking");
     } finally {
       setIsConfirming(false);
     }
@@ -257,7 +285,7 @@ export default function BookingConfirmationPage() {
   const confirmCancelBooking = async (): Promise<void> => {
     setShowCancelModal(false);
     if (!id) {
-      setError('Missing booking ID');
+      setError("Missing booking ID");
       return;
     }
     setIsCanceling(true);
@@ -266,14 +294,14 @@ export default function BookingConfirmationPage() {
         `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/cancel-booking/${id}`,
         { withCredentials: true }
       );
-      setBooking(prev => prev ? { ...prev, status: 'cancelled' } : null);
-      toast.success('Booking cancelled successfully');
-      router.push('/home');
+      setBooking((prev) => (prev ? { ...prev, status: "cancelled" } : null));
+      toast.success("Booking cancelled successfully");
+      router.push("/home");
     } catch (err) {
       const error = err as AxiosError | Error;
-      setError(error.message || 'Failed to cancel booking');
-      console.error('Cancel booking error:', error);
-      toast.error(error.message || 'Failed to cancel booking');
+      setError(error.message || "Failed to cancel booking");
+      console.error("Cancel booking error:", error);
+      toast.error(error.message || "Failed to cancel booking");
     } finally {
       setIsCanceling(false);
     }
@@ -283,14 +311,16 @@ export default function BookingConfirmationPage() {
     setSelectedPayment(method);
   };
 
-  const handlePayment = async (e: MouseEvent<HTMLButtonElement>): Promise<void> => {
+  const handlePayment = async (
+    e: MouseEvent<HTMLButtonElement>
+  ): Promise<void> => {
     e.preventDefault();
     if (!selectedPayment || !booking || !actualBookingId) {
       toast.error("Please complete booking confirmation first");
       return;
     }
     try {
-      toast.loading('Initializing payment...');
+      toast.loading("Initializing payment...");
       const payload = {
         amount: booking.totalPrice,
       };
@@ -300,27 +330,27 @@ export default function BookingConfirmationPage() {
         {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
       toast.dismiss();
       if (!response.data.checkout_url) {
-        throw new Error('No checkout URL received');
+        throw new Error("No checkout URL received");
       }
       window.location.href = response.data.checkout_url;
     } catch (err) {
       toast.dismiss();
       const error = err as AxiosError | Error;
-      toast.error(error.message || 'Payment initialization failed');
-      console.error('Payment error:', error);
+      toast.error(error.message || "Payment initialization failed");
+      console.error("Payment error:", error);
     }
   };
 
   const formatPrice = (price: number) => {
-    return price.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'ETB',
+    return price.toLocaleString("en-US", {
+      style: "currency",
+      currency: "ETB",
       maximumFractionDigits: 0,
     });
   };
@@ -330,7 +360,9 @@ export default function BookingConfirmationPage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
         <div className="text-center max-w-md p-6 rounded-xl shadow-md bg-white dark:bg-gray-800">
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Booking Error</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+            Booking Error
+          </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
           <ButtonOne
             onClick={() => router.back()}
@@ -349,7 +381,9 @@ export default function BookingConfirmationPage() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading booking details...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
+            Loading booking details...
+          </p>
         </div>
       </div>
     );
@@ -364,10 +398,13 @@ export default function BookingConfirmationPage() {
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20">
                 <XCircle className="h-10 w-10 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-4">Cancel Booking</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-4">
+                Cancel Booking
+              </h3>
               <div className="mt-4">
                 <p className="text-gray-600 dark:text-gray-300">
-                  Are you sure you want to cancel this booking? This action cannot be undone.
+                  Are you sure you want to cancel this booking? This action
+                  cannot be undone.
                 </p>
               </div>
             </div>
@@ -401,14 +438,20 @@ export default function BookingConfirmationPage() {
         </ButtonOne>
 
         <div className="flex items-center gap-4">
-          <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
-            booking.status === 'confirmed' 
-              ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
-              : booking.status === 'cancelled' 
-                ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300' 
-                : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300'
-          }`}>
-            {booking.status === 'confirmed' ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+          <span
+            className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
+              booking.status === "confirmed"
+                ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300"
+                : booking.status === "cancelled"
+                ? "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300"
+                : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300"
+            }`}
+          >
+            {booking.status === "confirmed" ? (
+              <CheckCircle2 className="w-5 h-5" />
+            ) : (
+              <XCircle className="w-5 h-5" />
+            )}
             {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
           </span>
         </div>
@@ -418,15 +461,31 @@ export default function BookingConfirmationPage() {
         <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 md:p-8 text-white">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Booking Confirmation</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">
+                Booking Confirmation
+              </h1>
               <p className="text-white/90 flex items-center gap-2 mt-2">
                 <CalendarDays className="w-5 h-5" />
-                {new Date(booking.pickupDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(booking.returnDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {new Date(booking.pickupDate).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}{" "}
+                -{" "}
+                {new Date(booking.returnDate).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </p>
             </div>
             <div className="p-3 md:p-4 rounded-lg bg-white/10 backdrop-blur-sm">
               <p className="text-white/80 text-sm">Booking Reference</p>
-              <p className="font-mono font-bold text-lg md:text-xl">#{actualBookingId || 'Pending'}</p>
+              <p className="font-mono font-bold text-lg md:text-xl">
+                #{actualBookingId || "Pending"}
+              </p>
             </div>
           </div>
         </div>
@@ -443,38 +502,34 @@ export default function BookingConfirmationPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
               <div className="relative h-64 w-full overflow-hidden rounded-lg mb-6 bg-gray-100 dark:bg-gray-700">
                 <img
-                  src={
-                    booking.Fleet?.image
-                      ? `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/cars/${booking.Fleet.image}`
-                      : '/placeholder-car.png'
-                  }
+                  src={booking.Fleet?.image || "/placeholder-car.png"}
                   alt={`${booking.Fleet?.brand} ${booking.Fleet?.model}`}
                   className="absolute inset-0 w-full h-full object-contain transition-transform duration-500 hover:scale-105"
                 />
               </div>
-
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {booking.Fleet?.brand} {booking.Fleet?.model} <span className="text-red-500">({booking.Fleet?.year})</span>
+                  {booking.Fleet?.brand} {booking.Fleet?.model}{" "}
+                  <span className="text-red-500">({booking.Fleet?.year})</span>
                 </h3>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <Feature 
+                  <Feature
                     icon={<Car className="w-5 h-5 text-red-500" />}
                     label="Type"
                     value={booking.Fleet?.type}
                   />
-                  <Feature 
+                  <Feature
                     icon={<Fuel className="w-5 h-5 text-red-500" />}
                     label="Fuel"
                     value={booking.Fleet?.fuelType}
                   />
-                  <Feature 
+                  <Feature
                     icon={<Users className="w-5 h-5 text-red-500" />}
                     label="Seats"
                     value={booking.Fleet?.seats.toString()}
                   />
-                  <Feature 
+                  <Feature
                     icon={<Cog className="w-5 h-5 text-red-500" />}
                     label="Transmission"
                     value={booking.Fleet?.transmission}
@@ -483,7 +538,9 @@ export default function BookingConfirmationPage() {
 
                 <div className="bg-red-50 dark:bg-gray-700 p-4 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-700 dark:text-white">Daily Rate</span>
+                    <span className="text-gray-700 dark:text-white">
+                      Daily Rate
+                    </span>
                     <span className="font-bold text-red-500 dark:text-red-400">
                       {formatPrice(booking.Fleet?.pricePerDay)}
                     </span>
@@ -503,22 +560,38 @@ export default function BookingConfirmationPage() {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 space-y-6">
               <div className="space-y-4">
-                <Feature 
+                <Feature
                   icon={<CalendarDays className="w-5 h-5 text-red-500" />}
                   label="Pickup Date"
-                  value={new Date(booking.pickupDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  value={new Date(booking.pickupDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )}
                 />
-                <Feature 
+                <Feature
                   icon={<CalendarDays className="w-5 h-5 text-red-500" />}
                   label="Return Date"
-                  value={new Date(booking.returnDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  value={new Date(booking.returnDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )}
                 />
-                <Feature 
+                <Feature
                   icon={<CalendarDays className="w-5 h-5 text-red-500" />}
                   label="Total Days"
                   value={booking.totalDate.toString()}
                 />
-                <Feature 
+                <Feature
                   icon={<MapPin className="w-5 h-5 text-red-500" />}
                   label="Pickup Location"
                   value={booking.pickupLocation}
@@ -527,7 +600,9 @@ export default function BookingConfirmationPage() {
 
               <div className="bg-red-50 dark:bg-gray-700 p-4 rounded-lg">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700 dark:text-white">Total Price</span>
+                  <span className="text-gray-700 dark:text-white">
+                    Total Price
+                  </span>
                   <span className="font-bold text-2xl text-red-500 dark:text-red-400">
                     {formatPrice(booking.totalPrice)}
                   </span>
@@ -563,7 +638,9 @@ export default function BookingConfirmationPage() {
                 {isEditingUserInfo ? (
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Full Name
+                      </label>
                       <input
                         type="text"
                         name="fullName"
@@ -573,7 +650,9 @@ export default function BookingConfirmationPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email
+                      </label>
                       <input
                         type="email"
                         name="email"
@@ -583,7 +662,9 @@ export default function BookingConfirmationPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Phone Number
+                      </label>
                       <input
                         type="tel"
                         name="phoneNumber"
@@ -605,18 +686,9 @@ export default function BookingConfirmationPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <Feature 
-                      label="Name"
-                      value={booking.User?.fullName}
-                    />
-                    <Feature 
-                      label="Email"
-                      value={booking.User?.email}
-                    />
-                    <Feature 
-                      label="Phone"
-                      value={booking.User?.phoneNumber}
-                    />
+                    <Feature label="Name" value={booking.User?.fullName} />
+                    <Feature label="Email" value={booking.User?.email} />
+                    <Feature label="Phone" value={booking.User?.phoneNumber} />
                   </div>
                 )}
               </div>
@@ -626,7 +698,7 @@ export default function BookingConfirmationPage() {
 
         <div className="bg-gray-50 dark:bg-gray-700 p-6">
           <div className="flex flex-col sm:flex-row gap-4">
-            {booking?.status === 'pending' && (
+            {booking?.status === "pending" && (
               <ButtonOne
                 onClick={handleConfirmBooking}
                 disabled={isConfirming}
@@ -643,7 +715,7 @@ export default function BookingConfirmationPage() {
               </ButtonOne>
             )}
 
-            {booking?.status === 'confirmed' && (
+            {booking?.status === "confirmed" && (
               <ButtonOne
                 onClick={handleCancelBooking}
                 disabled={isCanceling}
@@ -662,7 +734,7 @@ export default function BookingConfirmationPage() {
           </div>
         </div>
 
-        {booking.status === 'confirmed' && (
+        {booking.status === "confirmed" && (
           <div className="bg-gray-50 dark:bg-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <CreditCard className="w-6 h-6 text-blue-500" />
@@ -671,16 +743,22 @@ export default function BookingConfirmationPage() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               <button
-                onClick={() => handlePaymentSelection('chapa')}
+                onClick={() => handlePaymentSelection("chapa")}
                 className={`bg-white dark:bg-gray-800 p-4 rounded-lg flex items-center justify-between
-                  ${selectedPayment === 'chapa' ? 'ring-2 ring-blue-500' : 'hover:bg-gray-100 dark:hover:bg-gray-600'}`}
+                  ${
+                    selectedPayment === "chapa"
+                      ? "ring-2 ring-blue-500"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-600"
+                  }`}
               >
                 <div className="flex items-center gap-4">
                   <div className="bg-purple-900/20 p-3 rounded-full">
                     <CreditCard className="w-6 h-6 text-purple-400" />
                   </div>
                   <div className="text-left">
-                    <h3 className="font-medium text-gray-900 dark:text-white">Chapa</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white">
+                      Chapa
+                    </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
                       Credit/Debit Card, Mobile Money
                     </p>
@@ -692,7 +770,7 @@ export default function BookingConfirmationPage() {
             {selectedPayment && (
               <div className="mt-6 p-4 bg-blue-50 dark:bg-gray-600 rounded-lg">
                 <h3 className="font-medium text-gray-900 dark:text-white mb-2">
-                  Proceed with {selectedPayment.replace('_', ' ')} payment
+                  Proceed with {selectedPayment.replace("_", " ")} payment
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-200 mb-4">
                   You&apos;ll be redirected to complete your payment securely
@@ -702,7 +780,9 @@ export default function BookingConfirmationPage() {
                   disabled={!actualBookingId}
                   className="w-full"
                 >
-                  {actualBookingId ? `Pay ${formatPrice(booking.totalPrice)} Now` : 'Preparing payment...'}
+                  {actualBookingId
+                    ? `Pay ${formatPrice(booking.totalPrice)} Now`
+                    : "Preparing payment..."}
                 </ButtonOne>
               </div>
             )}
@@ -717,7 +797,7 @@ function Feature({
   icon,
   label,
   value,
-  valueClass = ''
+  valueClass = "",
 }: {
   icon?: React.ReactNode;
   label: string;
@@ -725,15 +805,20 @@ function Feature({
   valueClass?: string;
 }) {
   return (
-    <div className={`flex items-start gap-3 p-3 rounded-lg transition-colors
+    <div
+      className={`flex items-start gap-3 p-3 rounded-lg transition-colors
       bg-white dark:bg-gray-800
       hover:bg-red-50 dark:hover:bg-gray-700`}
     >
-      {icon && <div className="w-5 h-5 mt-0.5 text-red-500 flex-shrink-0">{icon}</div>}
+      {icon && (
+        <div className="w-5 h-5 mt-0.5 text-red-500 flex-shrink-0">{icon}</div>
+      )}
       <div className="flex-1">
         <p className="text-sm text-gray-500 dark:text-gray-300">{label}</p>
-        <p className={`font-medium text-gray-900 dark:text-white ${valueClass}`}>
-          {value || 'N/A'}
+        <p
+          className={`font-medium text-gray-900 dark:text-white ${valueClass}`}
+        >
+          {value || "N/A"}
         </p>
       </div>
     </div>

@@ -153,12 +153,9 @@ const BookingCard = ({
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-64 h-48 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden relative group">
           <img
-            src={
-              booking.fleet.image
-                ? `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/cars/${booking.fleet.image}`
-                : "/placeholder.png"
-            }
-            alt={booking.fleet.model}
+            src={booking.fleet?.image ?? "/placeholder.png"}
+            alt={booking.fleet?.model ?? "Car Image"}
+            className="w-full h-full object-contain"
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
         </div>
@@ -423,8 +420,8 @@ const BookingHistory = () => {
           No Bookings Yet
         </h2>
         <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-md mx-auto">
-          You haven&apos;t made any bookings with us yet. Start exploring our fleet
-          of vehicles and plan your next adventure!
+          You haven&apos;t made any bookings with us yet. Start exploring our
+          fleet of vehicles and plan your next adventure!
         </p>
         <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
           <button

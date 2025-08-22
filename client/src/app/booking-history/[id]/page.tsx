@@ -277,7 +277,7 @@ export default function SingleBookingPage() {
             <div className="flex flex-col md:flex-row gap-6">
               <div className="w-full md:w-80 h-56 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
                 <img
-                  src={`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/cars/${booking.fleet.image}`}
+                  src={booking.fleet.image}
                   alt={booking.fleet.model}
                   className="w-full h-full object-cover"
                 />

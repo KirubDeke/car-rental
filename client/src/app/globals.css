@@ -16,10 +16,10 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* .dark .dark\:bg-gray-800 {
+.dark .dark\:bg-gray-800 {
   background-color: #1f2937;
 }
 .dark .dark\:text-white {
   color: white;
-} */
+}
 
