@@ -63,12 +63,12 @@ export default function FleetManagement() {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    if(!isAuthenticated){
+    if (!isAuthenticated) {
       router.push("/login");
-    }else{
-       fetchFleets();
+    } else {
+      fetchFleets();
     }
-  }, [currentPage,isAuthenticated, router]);
+  }, [currentPage, isAuthenticated, router]);
 
   const fetchFleets = async () => {
     try {
@@ -99,30 +99,30 @@ export default function FleetManagement() {
 
     try {
       setIsUpdating(true);
-      
+
       const formData = new FormData();
-      
+
       // Append all fields to formData
       Object.entries(editData).forEach(([key, value]) => {
-        if (key !== 'image' && value !== undefined) {
+        if (key !== "image" && value !== undefined) {
           formData.append(key, value.toString());
         }
       });
 
       // Append image if it's a new file
-      if (previewImage && previewImage.startsWith('blob:')) {
-        const blob = await fetch(previewImage).then(r => r.blob());
-        formData.append('image', blob, 'vehicle-image.jpg');
+      if (previewImage && previewImage.startsWith("blob:")) {
+        const blob = await fetch(previewImage).then((r) => r.blob());
+        formData.append("image", blob, "vehicle-image.jpg");
       }
 
       await axios.put(
         `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/updateFleet/${editData.id}`,
         formData,
         {
-          withCredentials: true
+          withCredentials: true,
         }
       );
-      
+
       toast.success("Vehicle updated successfully");
       fetchFleets();
       setShowEditModal(false);
@@ -144,8 +144,9 @@ export default function FleetManagement() {
 
     try {
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/deleteFleet/${fleetToDelete}`, {
-          withCredentials: true
+        `${process.env.NEXT_PUBLIC_BASE_URL}kirub-rental/fleets/deleteFleet/${fleetToDelete}`,
+        {
+          withCredentials: true,
         }
       );
       toast.success("Vehicle deleted successfully");
@@ -164,9 +165,13 @@ export default function FleetManagement() {
     setShowDetails(true);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setEditData(prev => ({ ...prev, [name]: value }));
+    setEditData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,16 +197,16 @@ export default function FleetManagement() {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     } else {
-      toast.error('Please upload an image file');
+      toast.error("Please upload an image file");
     }
   };
 
@@ -266,8 +271,12 @@ export default function FleetManagement() {
                               <div className="flex-shrink-0 h-10 w-16">
                                 <img
                                   className="h-10 w-16 object-cover rounded"
-                                  src={`${process.env.NEXT_PUBLIC_BASE_URL}uploads/cars/${fleet.image}`}
+                                  src={fleet.image}
                                   alt={`${fleet.brand} ${fleet.model}`}
+                                  onError={(e) =>
+                                    (e.currentTarget.src =
+                                      "/car-placeholder.jpg")
+                                  }
                                 />
                               </div>
                             </td>
@@ -354,7 +363,7 @@ export default function FleetManagement() {
                           <div>
                             <img
                               className="w-full h-48 object-cover rounded-lg mb-4"
-                              src={`${process.env.NEXT_PUBLIC_BASE_URL}uploads/cars/${selectedFleet.image}`}
+                              src={selectedFleet.image}
                               alt={`${selectedFleet.brand} ${selectedFleet.model}`}
                             />
 
@@ -466,7 +475,8 @@ export default function FleetManagement() {
                                 <div className="space-y-2">
                                   <FiUpload className="mx-auto h-12 w-12 text-gray-400" />
                                   <p className="text-sm text-gray-600">
-                                    Drag and drop an image here, or click to select
+                                    Drag and drop an image here, or click to
+                                    select
                                   </p>
                                   <input
                                     type="file"
@@ -493,7 +503,7 @@ export default function FleetManagement() {
                             <input
                               type="text"
                               name="brand"
-                              value={editData.brand || ''}
+                              value={editData.brand || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             />
@@ -505,7 +515,7 @@ export default function FleetManagement() {
                             <input
                               type="text"
                               name="model"
-                              value={editData.model || ''}
+                              value={editData.model || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             />
@@ -517,7 +527,7 @@ export default function FleetManagement() {
                             <input
                               type="number"
                               name="year"
-                              value={editData.year || ''}
+                              value={editData.year || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             />
@@ -529,7 +539,7 @@ export default function FleetManagement() {
                             <input
                               type="text"
                               name="plateNumber"
-                              value={editData.plateNumber || ''}
+                              value={editData.plateNumber || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             />
@@ -541,7 +551,7 @@ export default function FleetManagement() {
                             <input
                               type="text"
                               name="type"
-                              value={editData.type || ''}
+                              value={editData.type || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             />
@@ -553,7 +563,7 @@ export default function FleetManagement() {
                             <input
                               type="text"
                               name="pricePerDay"
-                              value={editData.pricePerDay || ''}
+                              value={editData.pricePerDay || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             />
@@ -564,7 +574,7 @@ export default function FleetManagement() {
                             </label>
                             <select
                               name="fuelType"
-                              value={editData.fuelType || ''}
+                              value={editData.fuelType || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             >
@@ -581,7 +591,7 @@ export default function FleetManagement() {
                             <input
                               type="number"
                               name="seats"
-                              value={editData.seats || ''}
+                              value={editData.seats || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             />
@@ -592,7 +602,7 @@ export default function FleetManagement() {
                             </label>
                             <select
                               name="transmission"
-                              value={editData.transmission || ''}
+                              value={editData.transmission || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                             >
@@ -606,11 +616,13 @@ export default function FleetManagement() {
                             </label>
                             <select
                               name="maintenanceMode"
-                              value={editData.maintenanceMode ? 'true' : 'false'}
-                              onChange={(e) => 
-                                setEditData(prev => ({ 
-                                  ...prev, 
-                                  maintenanceMode: e.target.value === 'true' 
+                              value={
+                                editData.maintenanceMode ? "true" : "false"
+                              }
+                              onChange={(e) =>
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  maintenanceMode: e.target.value === "true",
                                 }))
                               }
                               className="w-full p-2 border border-gray-300 rounded-md"
@@ -625,7 +637,7 @@ export default function FleetManagement() {
                             </label>
                             <textarea
                               name="description"
-                              value={editData.description || ''}
+                              value={editData.description || ""}
                               onChange={handleInputChange}
                               className="w-full p-2 border border-gray-300 rounded-md"
                               rows={3}
@@ -647,13 +659,31 @@ export default function FleetManagement() {
                           >
                             {isUpdating ? (
                               <>
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg
+                                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
                                 </svg>
                                 Updating...
                               </>
-                            ) : 'Save Changes'}
+                            ) : (
+                              "Save Changes"
+                            )}
                           </button>
                         </div>
                       </div>
@@ -672,7 +702,8 @@ export default function FleetManagement() {
                             Delete Vehicle
                           </h3>
                           <p className="text-gray-600 text-center mb-6">
-                            Are you sure you want to delete this vehicle? This action cannot be undone.
+                            Are you sure you want to delete this vehicle? This
+                            action cannot be undone.
                           </p>
                           <div className="flex space-x-4 w-full">
                             <button
