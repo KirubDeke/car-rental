@@ -45,7 +45,7 @@ export default function CarCreationForm() {
   });
   const [image, setImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -125,6 +125,8 @@ export default function CarCreationForm() {
   };
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!isAuthenticated) {
       router.push("/login");
     }
