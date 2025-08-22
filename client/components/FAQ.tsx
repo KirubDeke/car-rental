@@ -94,7 +94,7 @@ export default function CarRentalFAQ() {
                 <div
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${activeIndex === index ? 'max-h-96 mt-4 opacity-100' : 'max-h-0 opacity-0'}`}
                 >
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600 dark:text-white">
                     {faq.answer}
                   </p>
                 </div>
