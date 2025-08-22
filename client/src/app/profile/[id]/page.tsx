@@ -313,7 +313,7 @@ export default function ProfilePage() {
                               : "text"
                           }
                           name={field}
-                          value={(formData as any)[field]}
+                          value={formData[field as keyof typeof formData]} 
                           onChange={handleInputChange}
                           disabled={field === "email"}
                           placeholder={
