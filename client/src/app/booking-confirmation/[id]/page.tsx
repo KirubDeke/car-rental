@@ -381,9 +381,7 @@ export default function BookingConfirmationPage() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-foreground/70">
-            Loading booking details...
-          </p>
+          <p className="mt-4 text-foreground/70">Loading booking details...</p>
         </div>
       </div>
     );
@@ -437,12 +435,6 @@ export default function BookingConfirmationPage() {
         </ButtonOne>
 
         <div className="flex items-center gap-4">
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full bg-whiteColor text-foreground hover:bg-darkColor"
-          >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
           <span
             className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
               booking.status === "confirmed"
@@ -541,11 +533,9 @@ export default function BookingConfirmationPage() {
                   />
                 </div>
 
-                <div className="bg-red-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="bg-darkColor dark:bg-whiteColor p-4 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="text-foreground">
-                      Daily Rate
-                    </span>
+                    <span className="text-foreground">Daily Rate</span>
                     <span className="font-bold text-red-500 dark:text-red-400">
                       {formatPrice(booking.Fleet?.pricePerDay)}
                     </span>
@@ -603,11 +593,9 @@ export default function BookingConfirmationPage() {
                 />
               </div>
 
-              <div className="bg-red-50 dark:bg-gray-700 p-4 rounded-lg">
+              <div className="bg-darkColor dark:bg-whiteColor p-4 rounded-lg">
                 <div className="flex justify-between items-center">
-                  <span className="text-foreground">
-                    Total Price
-                  </span>
+                  <span className="text-foreground">Total Price</span>
                   <span className="font-bold text-2xl text-red-500 dark:text-red-400">
                     {formatPrice(booking.totalPrice)}
                   </span>
@@ -759,9 +747,7 @@ export default function BookingConfirmationPage() {
                     <CreditCard className="w-6 h-6 text-purple-400" />
                   </div>
                   <div className="text-left">
-                    <h3 className="font-medium text-foreground">
-                      Chapa
-                    </h3>
+                    <h3 className="font-medium text-foreground">Chapa</h3>
                     <p className="text-sm text-foreground/70">
                       Credit/Debit Card, Mobile Money
                     </p>
@@ -771,7 +757,7 @@ export default function BookingConfirmationPage() {
               </button>
             </div>
             {selectedPayment && (
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-gray-600 rounded-lg">
+              <div className="mt-6 p-4 bg-darkColor dark:bg-whiteColor rounded-lg">
                 <h3 className="font-medium text-foreground mb-2">
                   Proceed with {selectedPayment.replace("_", " ")} payment
                 </h3>
@@ -818,9 +804,7 @@ function Feature({
       )}
       <div className="flex-1">
         <p className="text-sm text-foreground/70">{label}</p>
-        <p
-          className={`font-medium text-foreground ${valueClass}`}
-        >
+        <p className={`font-medium text-foreground ${valueClass}`}>
           {value || "N/A"}
         </p>
       </div>

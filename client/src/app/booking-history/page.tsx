@@ -89,21 +89,6 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
   const router = useRouter();
 
-  const handleCancel = async () => {
-    if (confirm("Are you sure you want to cancel this booking?")) {
-      setIsCancelling(true);
-      try {
-        await cancelBooking(booking.id);
-        onCancel(booking.id);
-        toast.success("Booking cancelled successfully");
-      } catch {
-        toast.error("Failed to cancel booking. Please try again.");
-      } finally {
-        setIsCancelling(false);
-      }
-    }
-  };
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
@@ -241,12 +226,6 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
 
             <div className="flex gap-2 flex-wrap">
               <ButtonOne onClick={handleViewDetails}>View Details</ButtonOne>
-              {(booking.status === "confirmed" ||
-                booking.status === "pending") && (
-                <ButtonTwo onClick={handleCancel} disabled={isCancelling}>
-                  {isCancelling ? "Cancelling..." : "Cancel"}
-                </ButtonTwo>
-              )}
             </div>
           </div>
         </div>

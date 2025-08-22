@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Fuel, Users, Settings, CheckCircle, XCircle } from 'lucide-react';
-import axios from 'axios';
-import ButtonOne from './ui/ButtonOne';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Fuel, Users, Settings, CheckCircle, XCircle } from "lucide-react";
+import axios from "axios";
+import ButtonOne from "./ui/ButtonOne";
 
 interface Car {
   id: number;
@@ -37,9 +37,9 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
     fetchAvailability();
   }, [car.id]);
 
-  const price = parseInt(car.pricePerDay, 10).toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'ETB',
+  const price = parseInt(car.pricePerDay, 10).toLocaleString("en-US", {
+    style: "currency",
+    currency: "ETB",
     maximumFractionDigits: 0,
   });
 
@@ -49,12 +49,12 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
       onClick={() => router.push(`/fleet/${car.id}`)}
     >
       {/* Image */}
-      <div className="relative h-44 bg-gray-50 dark:bg-gray-800 rounded-t-lg overflow-hidden">
+      <div className="relative h-44 bg-gray-50 dark:bg-gray-50 rounded-t-lg overflow-hidden">
         <img
           src={car.image}
           alt="Vehicle"
           className="w-full h-full object-cover"
-          onError={(e) => (e.currentTarget.src = '/car-placeholder.jpg')}
+          onError={(e) => (e.currentTarget.src = "/car-placeholder.jpg")}
         />
         <span className="absolute top-2 left-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
           {car.type.toUpperCase()}
@@ -103,8 +103,8 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
               onClick={(e) => e.stopPropagation()}
               className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                 availability
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                  ? "bg-accent hover:bg-accent/90 text-white"
+                  : "bg-darkColor text-white cursor-not-allowed"
               }`}
               disabled={!availability}
             >

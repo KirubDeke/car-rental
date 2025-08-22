@@ -49,10 +49,9 @@ interface Booking {
   fleetId: string;
   startDate: string;
   endDate: string;
-  totalCost: number;
+  totalCost?: number;
   status: "pending" | "confirmed" | "cancelled" | "completed";
   pickupLocation: string;
-  dropoffLocation: string;
   createdAt: string;
   updatedAt: string;
   fleet: Fleet;
@@ -104,21 +103,47 @@ export default function SingleBookingPage() {
     }
   };
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", {
+  const parseDate = (dateStr: string) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return d;
+  };
+
+  const rentalDays = () => {
+    if (!booking) return 0;
+    const start = parseDate(booking.startDate);
+    const end = parseDate(booking.endDate);
+    if (!start || !end) return 0;
+    const diff = end.getTime() - start.getTime();
+    return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  };
+
+  const totalCost = booking
+    ? booking.totalCost ?? booking.fleet.pricePerDay * rentalDays()
+    : 0;
+
+  const formatDate = (dateString: string) => {
+    const d = parseDate(dateString);
+    if (!d) return "-";
+    return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
+  };
 
-  const formatDateTime = (dateString: string) =>
-    new Date(dateString).toLocaleString("en-US", {
+  const formatDateTime = (dateString: string) => {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return "-";
+    return d.toLocaleString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
 
   const statusColors = {
     pending:
@@ -127,7 +152,8 @@ export default function SingleBookingPage() {
       "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
     completed:
       "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    cancelled:
+      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   };
 
   const statusIcons = {
@@ -166,9 +192,7 @@ export default function SingleBookingPage() {
               <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-red-800 dark:text-red-300">
                 <p className="font-medium">Important:</p>
-                <p>
-                  • Cancellation may be subject to fees according to our policy
-                </p>
+                <p>• Cancellation may be subject to fees according to our policy</p>
                 <p>• Refunds will be processed within 5-7 business days</p>
               </div>
             </div>
@@ -240,7 +264,9 @@ export default function SingleBookingPage() {
           <ArrowLeft className="w-5 h-5" />
           Back to Booking History
         </button>
+
         <div className="bg-whiteColor dark:bg-darkColor rounded-xl shadow-md overflow-hidden">
+          {/* Header */}
           <div className="p-6 border-b border-darkColor">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -260,6 +286,8 @@ export default function SingleBookingPage() {
               </span>
             </div>
           </div>
+
+          {/* Fleet Info */}
           <div className="p-6 border-b border-darkColor">
             <div className="flex flex-col md:flex-row gap-6">
               <div className="w-full md:w-80 h-56 bg-darkColor rounded-lg overflow-hidden">
@@ -302,6 +330,8 @@ export default function SingleBookingPage() {
               </div>
             </div>
           </div>
+
+          {/* Booking Information */}
           <div className="p-6 border-b border-darkColor text-foreground">
             <h3 className="text-lg font-semibold mb-4">Booking Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -311,10 +341,12 @@ export default function SingleBookingPage() {
                   <p className="text-sm font-medium">Rental Period</p>
                   <p>
                     {formatDate(booking.startDate)} -{" "}
-                    {formatDate(booking.endDate)}
+                    {formatDate(booking.endDate)} ({rentalDays()}{" "}
+                    {rentalDays() > 1 ? "days" : "day"})
                   </p>
                 </div>
               </div>
+
               <div className="flex items-start gap-3">
                 <MapPin className="w-6 h-6 text-accent mt-1" />
                 <div>
@@ -322,24 +354,18 @@ export default function SingleBookingPage() {
                   <p>{booking.pickupLocation}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <MapPin className="w-6 h-6 text-accent mt-1" />
-                <div>
-                  <p className="text-sm font-medium">Drop-off Location</p>
-                  <p>{booking.dropoffLocation}</p>
-                </div>
-              </div>
+
               <div className="flex items-start gap-3">
                 <CreditCard className="w-6 h-6 text-accent mt-1" />
                 <div>
                   <p className="text-sm font-medium">Total Cost</p>
-                  <p className="text-xl font-bold">
-                    ETB {booking.totalCost?.toFixed(2) ?? "0.00"}
-                  </p>
+                  <p className="text-xl font-bold">ETB {totalCost.toFixed(2)}</p>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Payment Information */}
           {booking.payment && (
             <div className="p-6 border-b border-darkColor">
               <h3 className="text-lg font-semibold mb-4 text-foreground">
@@ -352,7 +378,7 @@ export default function SingleBookingPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">Amount</p>
-                  <p>ETB {booking.totalCost?.toFixed(2) ?? "0.00"}</p>
+                  <p>ETB {totalCost.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Status</p>
@@ -379,6 +405,8 @@ export default function SingleBookingPage() {
               </div>
             </div>
           )}
+
+          {/* Booking Timeline */}
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4 text-foreground">
               Booking Timeline
@@ -427,6 +455,8 @@ export default function SingleBookingPage() {
               </div>
             </div>
           </div>
+
+          {/* Cancel Button */}
           {(booking.status === "confirmed" || booking.status === "pending") && (
             <div className="p-6 bg-darkColor">
               <div className="flex justify-end">
@@ -434,7 +464,6 @@ export default function SingleBookingPage() {
                   onClick={() => setShowCancelModal(true)}
                   className="px-6 py-3 bg-accent text-whiteColor rounded-md hover:brightness-95 transition-colors flex items-center gap-2"
                 >
-                  <XCircle className="w-5 h-5" />
                   Cancel Booking
                 </ButtonOne>
               </div>
@@ -442,6 +471,7 @@ export default function SingleBookingPage() {
           )}
         </div>
       </div>
+
       {showCancelModal && <CancelConfirmationModal />}
     </div>
   );
