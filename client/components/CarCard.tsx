@@ -51,7 +51,7 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
       {/* Image */}
       <div className="relative h-44 bg-gray-50">
         <img
-          src={`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/cars/${car.image}`}
+          src={car.image}
           alt="Vehicle"
           className="w-full h-full object-cover"
           onError={(e) => (e.currentTarget.src = '/car-placeholder.jpg')}

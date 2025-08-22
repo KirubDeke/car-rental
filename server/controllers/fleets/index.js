@@ -14,8 +14,6 @@ const createFleets = async (req, res) => {
     description,
   } = req.body;
 
-  const image = req.file?.filename;
-
   try {
     const car = await db.fleets.findOne({ where: { plateNumber } });
 
@@ -25,6 +23,8 @@ const createFleets = async (req, res) => {
         message: "Fleet already exists",
       });
     }
+    // Cloudinary gives us the URL
+    const image = req.file?.path;
 
     const data = {
       brand,
@@ -55,7 +55,6 @@ const createFleets = async (req, res) => {
     });
   }
 };
-
 // GET /fleets
 const getAllFleets = async (req, res) => {
   try {
