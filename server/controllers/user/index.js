@@ -238,32 +238,24 @@ const getProfile = async (req, res) => {
 // Update profile
 const updateProfile = async (req, res) => {
   try {
-    const  id  = req.params.id; 
+    const id = req.params.id;
     const user = await db.users.findByPk(id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     const { fullName, email, phoneNumber } = req.body;
-    const image = req.file ? req.file.filename : null;
     let data = { fullName, email, phoneNumber };
-
-    if (image) {
-      // Delete old image if exists
-      if (user.photo) {
-        const oldImagePath = path.join(
-          __dirname,
-          "../../uploads/users",
-          user.photo
-        );
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
+    if (req.file) {
+      const image = req.file.path;
+      // (Optional) Delete old Cloudinary image if exists
+      if (user.photo && user.photo.includes("cloudinary.com")) {
+        const publicId = user.photo.split("/").slice(-1)[0].split(".")[0];
+        await cloudinary.uploader.destroy(`users/${publicId}`);
       }
-      data.photo = image; 
+      data.photo = image;
     }
     await user.update(data);
-
     return res.status(200).json({
       message: "Profile updated successfully",
       user,
@@ -273,6 +265,7 @@ const updateProfile = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 module.exports = {
   signup,

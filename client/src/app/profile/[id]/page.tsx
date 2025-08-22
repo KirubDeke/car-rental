@@ -257,7 +257,7 @@ export default function ProfilePage() {
                     />
                   ) : profile?.photo ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/users/${profile.photo}`}
+                      src={profile.photo}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
