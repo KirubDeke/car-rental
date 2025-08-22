@@ -90,7 +90,7 @@ export default function FleetManagement() {
 
   const handleEditClick = (fleet: Fleet) => {
     setEditData(fleet);
-    setPreviewImage(`${process.env.NEXT_PUBLIC_BASE_URL}uploads/cars/${fleet.image}`);
+    setPreviewImage(fleet.image);
     setShowEditModal(true);
   };
 
