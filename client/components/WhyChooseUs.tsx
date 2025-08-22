@@ -47,7 +47,7 @@ const WhyChooseUs = () => {
             Why Choose <span className="text-red-500">Us</span>
           </h2>
         </div>
-        
+
         <div className="grid gap-8 lg:gap-12 xl:gap-16 lg:grid-cols-12 items-center relative">
           <div
             className={`lg:col-span-5 mt-8 lg:mt-0 relative flex justify-center z-10 transition-all duration-1000 transform ${
@@ -75,7 +75,7 @@ const WhyChooseUs = () => {
               {features.map((feature, index) => (
                 <div
                   key={index}
-                  className={`flex items-start gap-4 p-4 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-500 transform group ${
+                  className={`flex items-start gap-4 p-4 bg-whiteColor dark:bg-darkColor hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-500 transform group ${
                     isVisible
                       ? "translate-y-0 opacity-100 scale-100"
                       : "translate-y-6 opacity-0 scale-95"
@@ -86,7 +86,7 @@ const WhyChooseUs = () => {
                     {feature.icon}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground dark:text-white mb-1.5">
+                    <h3 className="text-lg font-semibold text-foreground dark:text-black mb-1.5">
                       {feature.title}
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400 text-sm">

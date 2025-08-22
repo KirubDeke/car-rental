@@ -22,16 +22,10 @@ export default function NavbarPrivate() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
-  const handleLogout = async () => {
-    await logout();
-  };
+  const handleLogout = async () => await logout();
 
-  const isActiveLink = (path: string) => {
-    if (path === "/home") {
-      return pathname === "/home";
-    }
-    return pathname.startsWith(path);
-  };
+  const isActiveLink = (path: string) =>
+    path === "/home" ? pathname === "/home" : pathname.startsWith(path);
 
   const navItems = [
     { name: "Home", path: "/home" },
@@ -40,23 +34,23 @@ export default function NavbarPrivate() {
   ];
 
   return (
-    <nav className="bg-white/10 dark:bg-black/10 backdrop-blur-md sticky top-0 z-50">
+    <nav className="bg-whiteColor/10 dark:bg-darkColor/10 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        {/* Logo - Left Side */}
+        {/* Logo */}
         <Link href="/home" className="flex items-center md:flex-1">
           <div className="flex items-center space-x-2 text-2xl font-semibold whitespace-nowrap">
-            <CarFront size={42} className="text-gray-900 dark:text-white" />
+            <CarFront size={42} className="text-foreground" />
             <h2
-              className="text-gray-900 dark:text-white font-bold"
+              className="text-foreground font-bold"
               style={{ fontFamily: "Orbitron, sans-serif" }}
             >
               Kirub
-              <span className="text-red-600 dark:text-red-400"> Rental</span>
+              <span className="text-accent"> Rental</span>
             </h2>
           </div>
         </Link>
 
-        {/* Desktop Navigation - Centered */}
+        {/* Desktop Navigation */}
         <div className="hidden md:flex flex-1 justify-center">
           <ul className="flex space-x-8 font-medium">
             {navItems.map((item) => (
@@ -64,31 +58,33 @@ export default function NavbarPrivate() {
                 <Link
                   href={item.path}
                   className={`${
-                    isActiveLink(item.path)
-                      ? "text-red-600 dark:text-red-500"
-                      : "text-foreground dark:text-foreground"
-                  } hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300 relative group`}
+                    isActiveLink(item.path) ? "text-accent" : "text-foreground"
+                  } hover:text-accent transition-colors duration-300 relative group`}
                 >
                   {item.name}
-                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-red-600 dark:bg-red-400 transition-all duration-300 ${
-                    isActiveLink(item.path) ? "w-full" : "w-0 group-hover:w-full"
-                  }`}></span>
+                  <span
+                    className={`absolute -bottom-1 left-0 h-0.5 bg-accent transition-all duration-300 ${
+                      isActiveLink(item.path)
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                    }`}
+                  ></span>
                 </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Right Side - Theme Toggle and Profile Dropdown - Hidden on mobile */}
+        {/* Desktop Right Side */}
         <div className="hidden md:flex items-center md:flex-1 justify-end space-x-4">
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-full hover:bg-whiteColor/20 dark:hover:bg-darkColor/20 transition-colors"
             aria-label={`Toggle ${theme === "light" ? "dark" : "light"} mode`}
           >
             {theme === "light" ? (
-              <Moon className="w-5 h-5 text-gray-700" />
+              <Moon className="w-5 h-5 text-foreground" />
             ) : (
               <Sun className="w-5 h-5 text-yellow-300" />
             )}
@@ -100,7 +96,7 @@ export default function NavbarPrivate() {
               onClick={() => setProfileOpen(!profileOpen)}
               className="flex items-center space-x-2 focus:outline-none"
             >
-              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+              <div className="w-10 h-10 rounded-full bg-whiteColor/20 dark:bg-darkColor/20 overflow-hidden flex items-center justify-center">
                 {user?.photo ? (
                   <img
                     src={user.photo}
@@ -108,71 +104,64 @@ export default function NavbarPrivate() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
-                    <User size={20} />
-                  </div>
+                  <User size={20} className="text-foreground" />
                 )}
               </div>
               <ChevronDown
                 size={16}
                 className={`transition-transform duration-200 ${
                   profileOpen ? "rotate-180" : ""
-                } text-gray-700 dark:text-gray-300`}
+                } text-foreground`}
               />
             </button>
 
-            {/* Profile Dropdown Menu */}
             {profileOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-whiteColor dark:bg-darkColor rounded-md shadow-lg py-1 z-50">
                 <Link
                   href={`/profile/${user?.id}`}
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-white/20 dark:hover:bg-darkColor/20 rounded-md transition-colors"
                 >
-                  <User size={16} className="mr-2" />
-                  Profile
+                  <User size={16} className="mr-2" /> Profile
                 </Link>
                 <Link
                   href={`/booking-history`}
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-white/20 dark:hover:bg-darkColor/20 rounded-md transition-colors"
                 >
-                  <History size={16} className="mr-2" />
-                  Booking History
+                  <History size={16} className="mr-2" /> Booking History
                 </Link>
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-white/20 dark:hover:bg-darkColor/20 rounded-md transition-colors"
                 >
                   {theme === "light" ? (
                     <>
-                      <Moon size={16} className="mr-2" />
-                      Dark Mode
+                      <Moon size={16} className="mr-2" /> Dark Mode
                     </>
                   ) : (
                     <>
-                      <Sun size={16} className="mr-2 text-yellow-300" />
-                      Light Mode
+                      <Sun size={16} className="mr-2 text-yellow-300" /> Light
+                      Mode
                     </>
                   )}
                 </button>
-                <div className="border-t border-gray-100 dark:border-gray-700"></div>
+                <div className="border-t border-darkColor my-1"></div>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="flex items-center px-4 py-2 text-sm text-accent hover:text-red-500 hover:bg-white/20 dark:hover:bg-darkColor/20 rounded-md transition-colors"
                 >
-                  <LogOut size={16} className="mr-2" />
-                  Sign Out
+                  <LogOut size={16} className="mr-2" /> Sign Out
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Mobile Menu Button - Always visible on mobile */}
+        {/* Mobile Menu Button */}
         <div className="flex md:hidden items-center">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none"
+            className="inline-flex items-center p-2 w-10 h-10 justify-center rounded-lg hover:bg-whiteColor/20 dark:hover:bg-darkColor/20 focus:outline-none"
             aria-expanded={menuOpen}
           >
             <span className="sr-only">Open main menu</span>
@@ -201,24 +190,24 @@ export default function NavbarPrivate() {
             menuOpen ? "block" : "hidden"
           } w-full md:hidden transition-all duration-300 ease-in-out`}
         >
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-4 p-4 space-y-2">
+          <div className="bg-whiteColor/90 dark:bg-darkColor/90 backdrop-blur-md rounded-lg shadow-lg mt-4 p-4 space-y-2">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.path}
                 className={`block py-3 px-4 rounded-lg ${
                   isActiveLink(item.path)
-                    ? "bg-red-50 dark:bg-gray-700 text-red-600 dark:text-red-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300"
+                    ? "bg-accent/20 text-accent"
+                    : "text-foreground hover:bg-whiteColor/20 dark:hover:bg-darkColor/20"
                 } font-medium transition-colors duration-200`}
               >
                 {item.name}
               </Link>
             ))}
 
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-2 border-t border-darkColor">
               <div className="flex items-center px-4 py-3">
-                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mr-3">
+                <div className="w-8 h-8 rounded-full bg-whiteColor/20 dark:bg-darkColor/20 overflow-hidden mr-3 flex items-center justify-center">
                   {user?.photo ? (
                     <img
                       src={user.photo}
@@ -226,14 +215,14 @@ export default function NavbarPrivate() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="text-gray-500" size={20} />
+                    <User className="text-foreground" size={20} />
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-foreground">
                     {user?.fullName || "Guest"}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-foreground/70">
                     {user?.email || "Not signed in"}
                   </p>
                 </div>
@@ -241,36 +230,34 @@ export default function NavbarPrivate() {
 
               <Link
                 href={`/profile/${user?.id}`}
-                className="block py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium transition-colors duration-200"
+                className="block py-2.5 px-4 rounded-lg hover:bg-whiteColor/20 dark:hover:bg-darkColor/20 text-foreground font-medium transition-colors duration-200"
               >
                 Profile
               </Link>
               <Link
                 href={`/booking-history`}
-                className="block py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium transition-colors duration-200"
+                className="block py-2.5 px-4 rounded-lg hover:bg-whiteColor/20 dark:hover:bg-darkColor/20 text-foreground font-medium transition-colors duration-200"
               >
                 Booking History
               </Link>
-              {/* Theme Toggle in Mobile Menu */}
+              {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="flex items-center w-full py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium transition-colors duration-200"
+                className="flex items-center w-full py-2.5 px-4 rounded-lg hover:bg-whiteColor/20 dark:hover:bg-darkColor/20 text-foreground font-medium transition-colors duration-200"
               >
                 {theme === "light" ? (
                   <>
-                    <Moon className="w-5 h-5 mr-2" />
-                    Dark Mode
+                    <Moon className="w-5 h-5 mr-2" /> Dark Mode
                   </>
                 ) : (
                   <>
-                    <Sun className="w-5 h-5 mr-2 text-yellow-300" />
-                    Light Mode
+                    <Sun className="w-5 h-5 mr-2 text-yellow-300" /> Light Mode
                   </>
                 )}
               </button>
               <button
-                onClick={() => handleLogout()}
-                className="block py-2.5 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white text-center font-medium transition-colors duration-200 shadow-sm mt-2"
+                onClick={handleLogout}
+                className="block py-2.5 px-4 rounded-lg bg-accent hover:bg-red-700 text-white text-center font-medium transition-colors duration-200 shadow-sm mt-2"
               >
                 Sign Out
               </button>

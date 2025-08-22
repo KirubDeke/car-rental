@@ -358,12 +358,12 @@ export default function BookingConfirmationPage() {
   if (error) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
-        <div className="text-center max-w-md p-6 rounded-xl shadow-md bg-white dark:bg-gray-800">
+        <div className="text-center max-w-md p-6 rounded-xl shadow-md bg-whiteColor">
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-2xl font-semibold text-foreground mb-2">
             Booking Error
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
+          <p className="text-foreground/70 mb-4">{error}</p>
           <ButtonOne
             onClick={() => router.back()}
             className="flex items-center gap-2 mx-auto"
@@ -381,7 +381,7 @@ export default function BookingConfirmationPage() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">
+          <p className="mt-4 text-foreground/70">
             Loading booking details...
           </p>
         </div>
@@ -393,16 +393,16 @@ export default function BookingConfirmationPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {showCancelModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-whiteColor rounded-xl shadow-2xl max-w-md w-full p-6">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20">
                 <XCircle className="h-10 w-10 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-4">
+              <h3 className="text-xl font-bold text-foreground mt-4">
                 Cancel Booking
               </h3>
               <div className="mt-4">
-                <p className="text-gray-600 dark:text-gray-300">
+                <p className="text-foreground/70">
                   Are you sure you want to cancel this booking? This action
                   cannot be undone.
                 </p>
@@ -411,13 +411,12 @@ export default function BookingConfirmationPage() {
             <div className="mt-6 flex justify-center gap-4">
               <button
                 onClick={() => setShowCancelModal(false)}
-                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition-colors"
+                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-foreground rounded-lg transition-colors"
               >
                 Go Back
               </button>
               <ButtonOne
                 onClick={confirmCancelBooking}
-                // variant="destructive"
                 className="flex items-center gap-2"
               >
                 <XCircle className="h-5 w-5" />
@@ -431,13 +430,19 @@ export default function BookingConfirmationPage() {
       <div className="flex justify-between items-center mb-8">
         <ButtonOne
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-300"
+          className="flex items-center gap-2 text-foreground/70"
         >
           <ArrowLeft className="w-5 h-5" />
           Back
         </ButtonOne>
 
         <div className="flex items-center gap-4">
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full bg-whiteColor text-foreground hover:bg-darkColor"
+          >
+            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
           <span
             className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
               booking.status === "confirmed"
@@ -457,7 +462,7 @@ export default function BookingConfirmationPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-whiteColor rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 md:p-8 text-white">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
@@ -493,14 +498,14 @@ export default function BookingConfirmationPage() {
         <div className="p-6 grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
                 <Car className="w-6 h-6 text-red-500" />
                 Car Details
               </h2>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-              <div className="relative h-64 w-full overflow-hidden rounded-lg mb-6 bg-gray-100 dark:bg-gray-700">
+            <div className="bg-whiteColor rounded-lg p-6">
+              <div className="relative h-64 w-full overflow-hidden rounded-lg mb-6 bg-darkColor">
                 <img
                   src={booking.Fleet?.image || "/placeholder-car.png"}
                   alt={`${booking.Fleet?.brand} ${booking.Fleet?.model}`}
@@ -508,7 +513,7 @@ export default function BookingConfirmationPage() {
                 />
               </div>
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h3 className="text-2xl font-bold text-foreground">
                   {booking.Fleet?.brand} {booking.Fleet?.model}{" "}
                   <span className="text-red-500">({booking.Fleet?.year})</span>
                 </h3>
@@ -538,7 +543,7 @@ export default function BookingConfirmationPage() {
 
                 <div className="bg-red-50 dark:bg-gray-700 p-4 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-700 dark:text-white">
+                    <span className="text-foreground">
                       Daily Rate
                     </span>
                     <span className="font-bold text-red-500 dark:text-red-400">
@@ -552,13 +557,13 @@ export default function BookingConfirmationPage() {
 
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
                 <CalendarDays className="w-6 h-6 text-red-500" />
                 Booking Details
               </h2>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 space-y-6">
+            <div className="bg-whiteColor rounded-lg p-6 space-y-6">
               <div className="space-y-4">
                 <Feature
                   icon={<CalendarDays className="w-5 h-5 text-red-500" />}
@@ -600,7 +605,7 @@ export default function BookingConfirmationPage() {
 
               <div className="bg-red-50 dark:bg-gray-700 p-4 rounded-lg">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700 dark:text-white">
+                  <span className="text-foreground">
                     Total Price
                   </span>
                   <span className="font-bold text-2xl text-red-500 dark:text-red-400">
@@ -611,14 +616,12 @@ export default function BookingConfirmationPage() {
 
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-medium text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                  <h3 className="font-medium text-lg text-foreground flex items-center gap-2">
                     <Users className="w-5 h-5 text-red-500" />
                     User Information
                   </h3>
                   <ButtonOne
                     onClick={toggleUserInfoEdit}
-                    // variant="ghost"
-                    // size="sm"
                     className="flex items-center gap-2"
                   >
                     {isEditingUserInfo ? (
@@ -638,7 +641,7 @@ export default function BookingConfirmationPage() {
                 {isEditingUserInfo ? (
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-foreground/70 mb-2">
                         Full Name
                       </label>
                       <input
@@ -646,11 +649,11 @@ export default function BookingConfirmationPage() {
                         name="fullName"
                         value={editData.fullName}
                         onChange={handleUserInfoChange}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2.5 bg-whiteColor border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-foreground"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-foreground/70 mb-2">
                         Email
                       </label>
                       <input
@@ -658,11 +661,11 @@ export default function BookingConfirmationPage() {
                         name="email"
                         value={editData.email}
                         onChange={handleUserInfoChange}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2.5 bg-whiteColor border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-foreground"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-foreground/70 mb-2">
                         Phone Number
                       </label>
                       <input
@@ -670,7 +673,7 @@ export default function BookingConfirmationPage() {
                         name="phoneNumber"
                         value={editData.phoneNumber}
                         onChange={handleUserInfoChange}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2.5 bg-whiteColor border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-foreground"
                       />
                     </div>
 
@@ -696,7 +699,7 @@ export default function BookingConfirmationPage() {
           </div>
         </div>
 
-        <div className="bg-gray-50 dark:bg-gray-700 p-6">
+        <div className="bg-darkColor p-6">
           <div className="flex flex-col sm:flex-row gap-4">
             {booking?.status === "pending" && (
               <ButtonOne
@@ -735,8 +738,8 @@ export default function BookingConfirmationPage() {
         </div>
 
         {booking.status === "confirmed" && (
-          <div className="bg-gray-50 dark:bg-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <div className="bg-darkColor p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
               <CreditCard className="w-6 h-6 text-blue-500" />
               Complete Your Payment
             </h2>
@@ -744,11 +747,11 @@ export default function BookingConfirmationPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               <button
                 onClick={() => handlePaymentSelection("chapa")}
-                className={`bg-white dark:bg-gray-800 p-4 rounded-lg flex items-center justify-between
+                className={`bg-whiteColor p-4 rounded-lg flex items-center justify-between
                   ${
                     selectedPayment === "chapa"
                       ? "ring-2 ring-blue-500"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-600"
+                      : "hover:bg-darkColor"
                   }`}
               >
                 <div className="flex items-center gap-4">
@@ -756,23 +759,23 @@ export default function BookingConfirmationPage() {
                     <CreditCard className="w-6 h-6 text-purple-400" />
                   </div>
                   <div className="text-left">
-                    <h3 className="font-medium text-gray-900 dark:text-white">
+                    <h3 className="font-medium text-foreground">
                       Chapa
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-sm text-foreground/70">
                       Credit/Debit Card, Mobile Money
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-foreground/50" />
               </button>
             </div>
             {selectedPayment && (
               <div className="mt-6 p-4 bg-blue-50 dark:bg-gray-600 rounded-lg">
-                <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="font-medium text-foreground mb-2">
                   Proceed with {selectedPayment.replace("_", " ")} payment
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-200 mb-4">
+                <p className="text-sm text-foreground/70 mb-4">
                   You&apos;ll be redirected to complete your payment securely
                 </p>
                 <ButtonOne
@@ -807,16 +810,16 @@ function Feature({
   return (
     <div
       className={`flex items-start gap-3 p-3 rounded-lg transition-colors
-      bg-white dark:bg-gray-800
+      bg-whiteColor
       hover:bg-red-50 dark:hover:bg-gray-700`}
     >
       {icon && (
         <div className="w-5 h-5 mt-0.5 text-red-500 flex-shrink-0">{icon}</div>
       )}
       <div className="flex-1">
-        <p className="text-sm text-gray-500 dark:text-gray-300">{label}</p>
+        <p className="text-sm text-foreground/70">{label}</p>
         <p
-          className={`font-medium text-gray-900 dark:text-white ${valueClass}`}
+          className={`font-medium text-foreground ${valueClass}`}
         >
           {value || "N/A"}
         </p>

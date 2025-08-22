@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, JSX } from "react";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -12,18 +12,18 @@ import {
   CheckCircle,
   XCircle,
   CreditCard,
-  ArrowRight,
+  ArrowLeft,
   Search,
   Filter,
   ChevronDown,
   ChevronUp,
-  Sun,
-  Moon,
-  ArrowLeft,
+  Sparkles,
+  PartyPopper,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import ButtonOne from "../../../components/ui/ButtonOne";
+import ButtonTwo from "../../../components/ui/ButtonTwo";
 
-// Types
 interface Fleet {
   id: string;
   model: string;
@@ -42,7 +42,7 @@ interface Fleet {
 
 interface Payment {
   id: string;
-  amount: number;
+  amount: number | string;
   method: string;
   status: string;
   tx_ref: string;
@@ -55,45 +55,38 @@ interface Booking {
   fleetId: string;
   startDate: string;
   endDate: string;
-  totalCost: number;
+  totalCost: number | string;
   status: "pending" | "confirmed" | "cancelled" | "completed";
   pickupLocation: string;
   dropoffLocation: string;
   createdAt: string;
   updatedAt: string;
   fleet: Fleet;
-  payment: Payment;
+  payment: Payment | null;
 }
 
-const getBookingHistory = async () => {
+const getBookingHistory = async (): Promise<{ history: Booking[] }> => {
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/bookingHistory`,
-    {
-      withCredentials: true,
-    }
+    { withCredentials: true }
   );
   return response.data;
 };
 
-const cancelBooking = async (bookingId: string) => {
-  const response = await axios.delete(
+const cancelBooking = async (bookingId: string): Promise<void> => {
+  await axios.delete(
     `${process.env.NEXT_PUBLIC_BASE_URL}/kirub-rental/fleets/cancel-booking/${bookingId}`,
-    {
-      withCredentials: true,
-    }
+    { withCredentials: true }
   );
-  return response.data;
 };
 
-// Components
-const BookingCard = ({
-  booking,
-  onCancel,
-}: {
+interface BookingCardProps {
   booking: Booking;
   onCancel: (id: string) => void;
-}) => {
-  const [isCancelling, setIsCancelling] = useState(false);
+}
+
+const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
   const router = useRouter();
 
   const handleCancel = async () => {
@@ -103,8 +96,7 @@ const BookingCard = ({
         await cancelBooking(booking.id);
         onCancel(booking.id);
         toast.success("Booking cancelled successfully");
-      } catch (error) {
-        console.error("Failed to cancel booking:", error);
+      } catch {
         toast.error("Failed to cancel booking. Please try again.");
       } finally {
         setIsCancelling(false);
@@ -112,15 +104,17 @@ const BookingCard = ({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
   };
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     pending:
       "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
     confirmed:
@@ -130,140 +124,128 @@ const BookingCard = ({
     cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   };
 
-  const statusIcons = {
+  const statusIcons: Record<string, JSX.Element> = {
     pending: <Clock className="w-4 h-4" />,
     confirmed: <CheckCircle className="w-4 h-4" />,
     completed: <CheckCircle className="w-4 h-4" />,
     cancelled: <XCircle className="w-4 h-4" />,
   };
 
-  const statusText = {
+  const statusText: Record<string, string> = {
     pending: "Pending",
     confirmed: "Confirmed",
     completed: "Completed",
     cancelled: "Cancelled",
   };
 
-  const handleViewDetails = () => {
-    router.push(`/booking-history/${booking.id}`);
-  };
+  const totalCost =
+    typeof booking.totalCost === "number"
+      ? booking.totalCost.toFixed(2)
+      : booking.totalCost;
+  const paymentAmount = booking.payment?.amount
+    ? typeof booking.payment.amount === "number"
+      ? booking.payment.amount.toFixed(2)
+      : booking.payment.amount
+    : "0.00";
+
+  const handleViewDetails = () => router.push(`/booking-history/${booking.id}`);
 
   return (
-    <div className="rounded-xl p-6 mb-6 shadow-sm hover:shadow-md transition-all duration-300 bg-white dark:bg-gray-800">
+    <div className="rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 bg-whiteColor dark:bg-darkColor text-foreground">
       <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-64 h-48 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden relative group">
-          <img
-            src={booking.fleet?.image ?? "/placeholder.png"}
-            alt={booking.fleet?.model ?? "Car Image"}
-            className="w-full h-full object-contain"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
+        <div className="w-full md:w-64 h-48 rounded-lg overflow-hidden flex items-center justify-center">
+          {booking.fleet?.image ? (
+            <img
+              src={booking.fleet.image}
+              alt={booking.fleet.model}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Car className="w-16 h-16 text-gray-400 dark:text-gray-500" />
+          )}
         </div>
 
-        <div className="flex-1">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {booking.fleet.brand} {booking.fleet.model}
-              </h3>
-              <p className="text-gray-600 dark:text-white">
-                {booking.fleet.year} • {booking.fleet.plateNumber}
-              </p>
-            </div>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                statusColors[booking.status]
-              }`}
-            >
-              {statusIcons[booking.status]}
-              {statusText[booking.status]}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="flex items-start gap-2">
-              <Calendar className="w-5 h-5 text-white mt-0.5" />
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-white font-medium">
-                  Dates
-                </p>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {formatDate(booking.startDate)} -{" "}
-                  {formatDate(booking.endDate)}
+                <h3 className="text-xl font-semibold text-foreground">
+                  {booking.fleet.brand} {booking.fleet.model}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {booking.fleet.year} • {booking.fleet.plateNumber}
                 </p>
               </div>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
+                  statusColors[booking.status]
+                }`}
+              >
+                {statusIcons[booking.status]} {statusText[booking.status]}
+              </span>
             </div>
 
-            <div className="flex items-start gap-2">
-              <MapPin className="w-5 h-5 text-white mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-white font-medium">
-                  Locations
-                </p>
-                <p className="text-sm text-gray-900 dark:text-white">
-                  {booking.pickupLocation}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-text-white">
-                  to {booking.dropoffLocation}
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-foreground">
+              <div className="flex items-start gap-2">
+                <Calendar className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-sm font-medium">Dates</p>
+                  <p className="font-medium">
+                    {formatDate(booking.startDate)} -{" "}
+                    {formatDate(booking.endDate)}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-start gap-2">
-              <Car className="w-5 h-5 text-white mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-white font-medium">
-                  Car Details
-                </p>
-                <p className="text-sm text-gray-900 dark:text-white">
-                  {booking.fleet.fuelType} • {booking.fleet.transmission} •{" "}
-                  {booking.fleet.seats} seats
-                </p>
+              <div className="flex items-start gap-2">
+                <MapPin className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-sm font-medium">Locations</p>
+                  <p className="text-sm">{booking.pickupLocation}</p>
+                  <p className="text-sm">to {booking.dropoffLocation}</p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-start gap-2">
-              <CreditCard className="w-5 h-5 text-white mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-white font-medium">
-                  Payment
-                </p>
-                <p className="text-sm text-gray-900 dark:text-white">
-                  {booking.payment?.status === "success" ? "Paid" : "Pending"} •{" "}
-                  {booking.payment?.method}
-                </p>
+              <div className="flex items-start gap-2">
+                <Car className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-sm font-medium">Car Details</p>
+                  <p className="text-sm">
+                    {booking.fleet.fuelType} • {booking.fleet.transmission} •{" "}
+                    {booking.fleet.seats} seats
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <CreditCard className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-sm font-medium">Payment</p>
+                  <p className="text-sm">
+                    ETB {paymentAmount} • {booking.payment?.method || "N/A"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex justify-between items-center border-t pt-4 dark:border-gray-700">
+          <div className="flex justify-between items-center pt-4 border-t border-darkColor mt-4 flex-wrap gap-2">
             <div>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
-                ${booking.totalCost ? booking.totalCost.toFixed(2) : "0.00"}
+              <p className="text-lg font-bold text-foreground">
+                ETB {totalCost}
               </p>
-              <p className="text-sm text-gray-600 dark:text-white">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Booked on {formatDate(booking.createdAt)}
               </p>
             </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={handleViewDetails}
-                className="bg-white dark:bg-white px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
-              >
-                View Details
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
+            <div className="flex gap-2 flex-wrap">
+              <ButtonOne onClick={handleViewDetails}>View Details</ButtonOne>
               {(booking.status === "confirmed" ||
                 booking.status === "pending") && (
-                <button
-                  onClick={handleCancel}
-                  disabled={isCancelling}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
+                <ButtonTwo onClick={handleCancel} disabled={isCancelling}>
                   {isCancelling ? "Cancelling..." : "Cancel"}
-                </button>
+                </ButtonTwo>
               )}
             </div>
           </div>
@@ -273,197 +255,146 @@ const BookingCard = ({
   );
 };
 
-const BookingHistory = () => {
+const showConfirmationToast = (booking: Booking) => {
+  toast.custom(
+    (t) => (
+      <div
+        className={`${
+          t.visible ? "animate-enter" : "animate-leave"
+        } max-w-md w-full bg-whiteColor dark:bg-darkColor shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0 pt-0.5">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                <PartyPopper className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="ml-3 flex-1">
+              <p className="text-sm font-medium text-foreground">
+                Booking Confirmed! 🎉
+              </p>
+              <p className="mt-1 text-sm text-foreground/70">
+                Your {booking.fleet.brand} {booking.fleet.model} is reserved
+                from {new Date(booking.startDate).toLocaleDateString()} to{" "}
+                {new Date(booking.endDate).toLocaleDateString()}
+              </p>
+              <div className="mt-2 flex items-center">
+                <Sparkles className="w-4 h-4 text-yellow-500 mr-1" />
+                <span className="text-xs text-foreground/60">
+                  Booking ID: {booking.id.slice(0, 8)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex border-l border-darkColor">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-accent hover:text-accent/80 focus:outline-none"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    ),
+    {
+      duration: 6000,
+      position: "top-right",
+    }
+  );
+};
+
+const BookingHistory: React.FC = () => {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
   const router = useRouter();
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    document.documentElement.classList.toggle("dark", newMode);
-    localStorage.setItem("theme", newMode ? "dark" : "light");
-  };
-
-  // Initialize theme
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const systemDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    const initialMode = savedTheme ? savedTheme === "dark" : systemDark;
-    setDarkMode(initialMode);
-    if (initialMode) {
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchBookings();
-    }
+    if (isAuthenticated && user) fetchBookings();
   }, [isAuthenticated, user]);
 
-  useEffect(() => {
-    filterBookings();
-  }, [bookings, searchTerm, statusFilter]);
+  useEffect(() => filterBookings(), [bookings, searchTerm, statusFilter]);
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (): Promise<void> => {
     try {
       setLoading(true);
       const data = await getBookingHistory();
       setBookings(data.history || []);
-    } catch (err) {
-      setError("Failed to load bookings");
-      console.error(err);
+
+      const newConfirmedBooking = data.history.find(
+        (b: Booking) =>
+          b.status === "confirmed" &&
+          new Date(b.createdAt).getTime() > Date.now() - 60000
+      );
+
+      if (newConfirmedBooking) {
+        setTimeout(() => {
+          showConfirmationToast(newConfirmedBooking);
+        }, 1000);
+      }
+    } catch {
+      toast.error("Failed to load bookings");
     } finally {
       setLoading(false);
     }
   };
 
-  const filterBookings = () => {
+  const filterBookings = (): void => {
     let filtered = bookings;
-
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        (booking) =>
-          (booking.fleet.brand?.toLowerCase() || "").includes(term) ||
-          (booking.fleet.model?.toLowerCase() || "").includes(term) ||
-          (booking.pickupLocation?.toLowerCase() || "").includes(term) ||
-          (booking.dropoffLocation?.toLowerCase() || "").includes(term)
+        (b) =>
+          (b.fleet.brand?.toLowerCase() || "").includes(term) ||
+          (b.fleet.model?.toLowerCase() || "").includes(term) ||
+          (b.pickupLocation?.toLowerCase() || "").includes(term) ||
+          (b.dropoffLocation?.toLowerCase() || "").includes(term)
       );
     }
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((booking) => booking.status === statusFilter);
-    }
+    if (statusFilter !== "all")
+      filtered = filtered.filter((b) => b.status === statusFilter);
     setFilteredBookings(filtered);
   };
-  const handleCancelBooking = (bookingId: string) => {
+
+  const handleCancelBooking = (id: string) =>
     setBookings((prev) =>
-      prev.map((booking) =>
-        booking.id === bookingId ? { ...booking, status: "cancelled" } : booking
-      )
+      prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
     );
-  };
 
-  if (authLoading) {
+  if (authLoading || loading)
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-white">
-            Authentication Required
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
-            Please log in to view your booking history.
-          </p>
-          <div className="flex justify-center">
-            <button
-              onClick={() => (window.location.href = "/login")}
-              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Login
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
-        <p className="text-red-800 dark:text-red-400">{error}</p>
-        <button
-          onClick={fetchBookings}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
-  if (bookings.length === 0) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-16 px-4">
-        <div className="mb-8">
-          <div className="w-64 h-64 mx-auto text-gray-300 dark:text-gray-600">
-            <Car className="w-full h-full opacity-50" />
-          </div>
-        </div>
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
-          No Bookings Yet
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-md mx-auto">
-          You haven&apos;t made any bookings with us yet. Start exploring our
-          fleet of vehicles and plan your next adventure!
-        </p>
-        <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-          <button
-            onClick={() => (window.location.href = "/cars")}
-            className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg"
-          >
-            Browse Available Cars
-          </button>
-          <button
-            onClick={() => (window.location.href = "/offers")}
-            className="w-full sm:w-auto px-6 py-3 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors font-medium"
-          >
-            View Special Offers
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Back Link */}
+    <div className="max-w-screen-xl mx-auto px-4">
       <button
         onClick={() => router.push("/home")}
-        className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:underline mb-6"
+        className="flex items-center gap-2 text-accent hover:underline mb-6"
       >
-        <ArrowLeft className="w-5 h-5" />
-        Back to Home
+        <ArrowLeft className="w-5 h-5" /> Back to Home
       </button>
-      <div className="flex justify-between items-center mb-8">
+
+      <div className="flex justify-between items-center mb-8 flex-wrap gap-2">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             Booking History
           </h1>
-          <p className="text-gray-600 dark:text-white mt-2">
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
             You have {bookings.length} booking{bookings.length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
 
-      {/* Search and Filter Section */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm mb-6">
+      <div className="bg-whiteColor dark:bg-darkColor p-4 rounded-lg shadow-md mb-6">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -472,31 +403,25 @@ const BookingHistory = () => {
               placeholder="Search bookings..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-transparent text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full pl-10 pr-4 py-2 rounded-md border border-darkColor bg-whiteColor dark:bg-darkColor text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
 
-          <div className="w-full md:w-auto">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-black bg-white dark:bg-white hover:bg-gray-50 dark:hover:bg-gray-200 transition-colors"
-            >
-              <Filter className="w-4 h-4" />
-              Filter
+          <ButtonOne onClick={() => setShowFilters(!showFilters)}>
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4" /> Filter{" "}
               {showFilters ? (
                 <ChevronUp className="w-4 h-4" />
               ) : (
                 <ChevronDown className="w-4 h-4" />
               )}
-            </button>
-          </div>
+            </div>
+          </ButtonOne>
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-sm font-medium text-gray-700 dark:text-white mb-2">
-              Status
-            </p>
+          <div className="mt-4 pt-4 border-t border-darkColor">
+            <p className="text-sm font-medium mb-2 text-foreground">Status</p>
             <div className="flex flex-wrap gap-2">
               {["all", "pending", "confirmed", "completed", "cancelled"].map(
                 (status) => (
@@ -505,8 +430,8 @@ const BookingHistory = () => {
                     onClick={() => setStatusFilter(status)}
                     className={`px-3 py-1 rounded-full text-sm ${
                       statusFilter === status
-                        ? "bg-red-600 text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        ? "bg-accent text-white"
+                        : "bg-whiteColor dark:bg-darkColor text-foreground hover:brightness-95"
                     }`}
                   >
                     {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -518,13 +443,6 @@ const BookingHistory = () => {
         )}
       </div>
 
-      {/* Results count */}
-      {filteredBookings.length !== bookings.length && (
-        <p className="text-sm text-gray-600 dark:text-white mb-4">
-          Showing {filteredBookings.length} of {bookings.length} bookings
-        </p>
-      )}
-
       <div className="space-y-6">
         {filteredBookings.length > 0 ? (
           filteredBookings.map((booking) => (
@@ -535,12 +453,12 @@ const BookingHistory = () => {
             />
           ))
         ) : (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg">
+          <div className="text-center py-12 bg-whiteColor dark:bg-darkColor rounded-lg">
             <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-medium text-foreground mb-2">
               No bookings found
             </h3>
-            <p className="text-gray-600 dark:text-white">
+            <p className="text-gray-500 dark:text-gray-400">
               Try adjusting your search or filter criteria
             </p>
           </div>
@@ -550,37 +468,30 @@ const BookingHistory = () => {
   );
 };
 
-// Main Page Component
-export default function BookingHistoryPage() {
+const BookingHistoryPage: React.FC = () => {
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const [darkMode, setDarkMode] = useState(false);
 
-  // Initialize theme
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const systemDark = window.matchMedia(
       "(prefers-color-scheme: dark)"
     ).matches;
     const initialMode = savedTheme ? savedTheme === "dark" : systemDark;
-    setDarkMode(initialMode);
-    if (initialMode) {
-      document.documentElement.classList.add("dark");
-    }
+    if (initialMode) document.documentElement.classList.add("dark");
   }, []);
 
-  if (authLoading) {
+  if (authLoading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-background text-foreground dark:text-foreground">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-background text-foreground">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
       </div>
     );
-  }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background text-foreground dark:text-foreground py-8">
-      <div className="container mx-auto px-4">
-        <BookingHistory />
-      </div>
+    <div className="min-h-screen bg-background dark:bg-background text-foreground py-8">
+      <BookingHistory />
     </div>
   );
-}
+};
+
+export default BookingHistoryPage;
