@@ -103,7 +103,7 @@ export default function NavbarPrivate() {
               <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                 {user?.photo ? (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/users/${user.photo}`}
+                    src={user.photo}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />

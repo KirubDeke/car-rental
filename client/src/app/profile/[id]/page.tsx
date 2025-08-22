@@ -154,7 +154,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-      await logout();
+    await logout();
   };
 
   // Handle form input changes
@@ -257,15 +257,23 @@ export default function ProfilePage() {
                     />
                   ) : profile?.photo ? (
                     <img
-                      src={profile.photo}
+                      src={
+                        profile.photo.startsWith("http")
+                          ? profile.photo
+                          : `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/users/${profile.photo}`
+                      }
                       alt="Profile"
                       className="w-full h-full object-cover"
+                      onError={(e) =>
+                        (e.currentTarget.src = "/car-placeholder.jpg")
+                      }
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                       <User className="w-20 h-20 text-gray-400" />
                     </div>
                   )}
+
                   {isDragging && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                       <div className="text-white text-center p-4">
